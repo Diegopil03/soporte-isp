@@ -190,6 +190,49 @@
       border: 2px solid rgba(255,255,255,.9);
       box-shadow: 0 6px 16px rgba(0,0,0,.25);
     }
+
+    /* --- Mobile: Tickets visibles as a bottom drawer (so the map can be bigger) --- */
+    @media (max-width: 768px){
+      /* Stack layout; keep space for bottom nav */
+      main.main-content{
+        flex-direction: column;
+        padding-bottom: var(--bottomNavH);
+      }
+
+      /* Drawer panel */
+      #ticketsPanel{
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: var(--bottomNavH);
+        top: auto;
+        height: 62vh;
+        width: auto !important;
+        border-right: 0 !important;
+        border-top: 1px solid rgba(226,232,240,.9);
+        border-radius: 18px 18px 0 0;
+        transform: translateY(100%);
+        transition: transform .22s ease;
+        z-index: 2005;
+        background: #ffffff;
+        overflow-y: auto;
+      }
+      #ticketsPanel.is-open{ transform: translateY(0); }
+
+      /* Backdrop */
+      #ticketsBackdrop{ z-index: 2000; }
+
+      /* Make map fill remaining space */
+      #map{
+        height: calc(100vh - 120px - var(--bottomNavH));
+      }
+
+      /* Ensure Leaflet panes don't sit above the drawer in some browsers */
+      .leaflet-pane,
+      .leaflet-control{
+        z-index: 400;
+      }
+    }
   </style>
 </head>
 
@@ -261,6 +304,13 @@
         Limpiar filtros
       </button>
 
+      <!-- Mobile: toggle tickets drawer -->
+      <button id="ticketsToggleBtn"
+        class="md:hidden text-xs font-bold px-3 py-2 rounded-xl bg-white/15 border border-white/20 hover:bg-white/25 transition"
+        type="button">
+        Tickets
+      </button>
+
       <!-- ACCIONES DE RUTA -->
       <div class="flex items-center gap-2 flex-wrap ml-2">
         <button id="routeOptimizeBtn" class="text-white text-xs font-bold px-3 py-2 rounded-xl transition" type="button">
@@ -278,11 +328,14 @@
   </div>
 </header>
 
+<!-- Mobile: backdrop for tickets drawer -->
+<div id="ticketsBackdrop" class="fixed inset-0 bg-black/40 hidden z-[40] md:hidden"></div>
+
 <!-- MAIN -->
 <main class="main-content flex-1 flex">
 
   <!-- LISTA LATERAL -->
-  <aside class="w-[320px] border-r border-slate-200 bg-white p-4 overflow-y-auto">
+  <aside id="ticketsPanel" class="w-[320px] border-r border-slate-200 bg-white p-4 overflow-y-auto">
     <div class="flex items-center justify-between mb-3">
       <h2 class="text-sm font-bold text-slate-800">Tickets visibles</h2>
       <span id="mapCount" class="text-xs text-slate-500">0</span>

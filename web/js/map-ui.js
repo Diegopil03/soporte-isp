@@ -16,8 +16,55 @@ let routeAnimTimer = null;
 let routeAnimDot = null;
 
 // Helpers
+
 function byId(id) {
   return document.getElementById(id);
+}
+
+// =========================
+// Mobile: Tickets drawer (bottom sheet)
+// =========================
+function isMobileViewport() {
+  return window.matchMedia && window.matchMedia("(max-width: 768px)").matches;
+}
+
+function openTicketsDrawer() {
+  const panel = byId("ticketsPanel");
+  const backdrop = byId("ticketsBackdrop");
+  if (!panel || !backdrop) return;
+  panel.classList.add("is-open");
+  backdrop.classList.remove("hidden");
+}
+
+function closeTicketsDrawer() {
+  const panel = byId("ticketsPanel");
+  const backdrop = byId("ticketsBackdrop");
+  if (!panel || !backdrop) return;
+  panel.classList.remove("is-open");
+  backdrop.classList.add("hidden");
+}
+
+function toggleTicketsDrawer() {
+  const panel = byId("ticketsPanel");
+  if (!panel) return;
+  if (panel.classList.contains("is-open")) closeTicketsDrawer();
+  else openTicketsDrawer();
+}
+
+function wireTicketsDrawer() {
+  const btn = byId("ticketsToggleBtn");
+  const backdrop = byId("ticketsBackdrop");
+
+  // Only wire when the elements exist (map.html only)
+  if (!btn || !backdrop) return;
+
+  btn.addEventListener("click", () => toggleTicketsDrawer());
+  backdrop.addEventListener("click", () => closeTicketsDrawer());
+
+  // Safety: if we leave mobile viewport, ensure drawer is closed
+  window.addEventListener("resize", () => {
+    if (!isMobileViewport()) closeTicketsDrawer();
+  });
 }
 
 function setRouteStats(text) {
@@ -166,11 +213,15 @@ function renderSideList(tickets) {
 
       // si no hay ubicación -> abre detalle
       if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
+        if (isMobileViewport()) closeTicketsDrawer();
         window.location.href = `ticket_detail.html?id=${encodeURIComponent(t.id)}`;
         return;
       }
 
       map.setView([lat, lng], 16);
+
+      // On mobile, close the drawer so the map is visible
+      if (isMobileViewport()) closeTicketsDrawer();
 
       // abre popup del marker si existe
       const mk = markers.find((mm) => mm?.__ticketId === t.id);
@@ -833,5 +884,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   renderTechMarker();
   wireMapFilters();
   wireRouteButtons(); // ✅ NUEVO
+  wireTicketsDrawer();
   await loadTicketsAndRender();
 });
