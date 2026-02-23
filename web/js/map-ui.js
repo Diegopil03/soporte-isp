@@ -40,15 +40,13 @@ function openTicketsDrawer() {
   // Lock background scroll (mobile)
   document.body.classList.add("drawer-open");
 
+   // Leaflet/iOS: evita que el mapa “robe” scroll/touch cuando usas el drawer
   try {
-  if (window.L) {
-    const panel = byId("ticketsPanel");
-    if (panel) {
+    if (window.L && panel) {
       L.DomEvent.disableClickPropagation(panel);
       L.DomEvent.disableScrollPropagation(panel);
     }
-  }
-} catch {}
+  } catch {}
 }
 
 function closeTicketsDrawer() {
@@ -79,6 +77,21 @@ function wireTicketsDrawer() {
 
   btn.addEventListener("click", () => toggleTicketsDrawer());
   backdrop.addEventListener("click", () => closeTicketsDrawer());
+
+    // Asegura que nunca carguemos con overlay/drawer “pegado”
+  closeTicketsDrawer();
+
+  const panel = byId("ticketsPanel");
+  if (panel) {
+    // Permite scroll del drawer, pero evita que el gesto llegue al mapa
+    panel.addEventListener(
+      "touchmove",
+      (e) => {
+        e.stopPropagation();
+      },
+      { passive: true }
+    );
+  }
 
   // Prevent iOS from scrolling the page when the backdrop is active
   backdrop.addEventListener(
