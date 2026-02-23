@@ -199,19 +199,34 @@
         padding-bottom: var(--bottomNavH);
       }
 
+      /* Backdrop (always present, but disabled until open) */
+      #ticketsBackdrop{
+        position: fixed;
+        inset: 0;
+        background: rgba(2,6,23,.45);
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity .18s ease;
+        z-index: 2000;
+      }
+      #ticketsBackdrop.is-open{
+        opacity: 1;
+        pointer-events: auto;
+      }
+
       /* Drawer panel */
       #ticketsPanel{
         position: fixed;
-        left: 0;
-        right: 0;
+        left: 12px;
+        right: 12px;
         bottom: var(--bottomNavH);
         top: auto;
-        height: 62vh;
+        height: 66vh;
         width: auto !important;
         border-right: 0 !important;
         border-top: 1px solid rgba(226,232,240,.9);
         border-radius: 18px 18px 0 0;
-        transform: translateY(100%);
+        transform: translateY(120%);
         transition: transform .22s ease;
         z-index: 2005;
         background: #ffffff;
@@ -219,12 +234,14 @@
         -webkit-overflow-scrolling: touch; /* iOS momentum scroll */
         touch-action: pan-y;               /* allow vertical scroll */
         overscroll-behavior: contain;      /* prevent background scroll chaining */
-        pointer-events: auto;
       }
       #ticketsPanel.is-open{ transform: translateY(0); }
 
-      /* Backdrop */
-      #ticketsBackdrop{ z-index: 2000; pointer-events: auto; }
+      /* Only lock the page scroll when the drawer is open */
+      body.drawer-open{
+        overflow: hidden;
+        touch-action: none;
+      }
 
       /* Make map fill remaining space */
       #map{
@@ -236,9 +253,6 @@
       .leaflet-control{
         z-index: 400;
       }
-
-      /* When drawer is open, ensure it stays on top and captures touches */
-      #ticketsPanel.is-open{ pointer-events: auto; }
     }
   </style>
 </head>
@@ -336,7 +350,7 @@
 </header>
 
 <!-- Mobile: backdrop for tickets drawer -->
-<div id="ticketsBackdrop" class="fixed inset-0 bg-black/40 hidden z-[40] md:hidden"></div>
+<div id="ticketsBackdrop" class="md:hidden"></div>
 
 <!-- MAIN -->
 <main class="main-content flex-1 flex">

@@ -32,16 +32,35 @@ function openTicketsDrawer() {
   const panel = byId("ticketsPanel");
   const backdrop = byId("ticketsBackdrop");
   if (!panel || !backdrop) return;
+
+  // Open
   panel.classList.add("is-open");
-  backdrop.classList.remove("hidden");
+  backdrop.classList.add("is-open");
+
+  // Lock background scroll (mobile)
+  document.body.classList.add("drawer-open");
+
+  try {
+  if (window.L) {
+    const panel = byId("ticketsPanel");
+    if (panel) {
+      L.DomEvent.disableClickPropagation(panel);
+      L.DomEvent.disableScrollPropagation(panel);
+    }
+  }
+} catch {}
 }
 
 function closeTicketsDrawer() {
   const panel = byId("ticketsPanel");
   const backdrop = byId("ticketsBackdrop");
   if (!panel || !backdrop) return;
+
   panel.classList.remove("is-open");
-  backdrop.classList.add("hidden");
+  backdrop.classList.remove("is-open");
+
+  // Restore background scroll
+  document.body.classList.remove("drawer-open");
 }
 
 function toggleTicketsDrawer() {
@@ -61,8 +80,23 @@ function wireTicketsDrawer() {
   btn.addEventListener("click", () => toggleTicketsDrawer());
   backdrop.addEventListener("click", () => closeTicketsDrawer());
 
-  // Safety: if we leave mobile viewport, ensure drawer is closed
+  // Prevent iOS from scrolling the page when the backdrop is active
+  backdrop.addEventListener(
+    "touchmove",
+    (e) => {
+      if (backdrop.classList.contains("is-open")) e.preventDefault();
+    },
+    { passive: false }
+  );
+
+  // Close with ESC on desktop
+  window.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") closeTicketsDrawer();
+  });
+
+  // If we leave mobile viewport, ensure drawer is closed and body scroll restored
   window.addEventListener("resize", () => {
+    // If we leave mobile viewport, ensure drawer is closed and body scroll restored
     if (!isMobileViewport()) closeTicketsDrawer();
   });
 }
@@ -218,10 +252,8 @@ function renderSideList(tickets) {
         return;
       }
 
-      map.setView([lat, lng], 16);
-
-      // On mobile, close the drawer so the map is visible
       if (isMobileViewport()) closeTicketsDrawer();
+      map.setView([lat, lng], 16);
 
       // abre popup del marker si existe
       const mk = markers.find((mm) => mm?.__ticketId === t.id);
