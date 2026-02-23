@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Perfil | Soporte Técnico ISP</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#3b82f6',
+                        secondary: '#64748b',
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <!-- Auth Gate: protect page -->
+  <script>
+    const SUPABASE_URL = "https://itkxgkxjwulfzklxyxke.supabase.co";
+    const SUPABASE_ANON_KEY = "sb_publishable_P2SJ7etHApOmvH2zXCeMng_hthMCXhA";
+
+    const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    sb.auth.getSession().then(({ data, error }) => {
+      if (error || !data.session) {
+        window.location.replace("login.html");
+      }
+    });
+  </script>
+    <link rel="stylesheet" href="../css/styles.css" />
+    <style>
+      :root{ --bottomNavH: 72px; --brandBlue: #2563eb; }
+
+      /* Keep content above the fixed bottom nav */
+      main.main-content{ padding-bottom: var(--bottomNavH) !important; }
+
+      /* --- Bottom nav: same as kanban --- */
+      .bottom-nav{
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        height: var(--bottomNavH);
+        padding-top: 6px !important;
+        padding-bottom: 8px !important;
+        background: var(--brandBlue) !important;
+        border-top: 0 !important;
+        z-index: 50;
+      }
+
+      .bottom-nav .bottom-nav-inner{
+        height: 100%;
+        padding-top: 0 !important;
+        padding-bottom: 0 !important;
+        display: flex;
+        align-items: center;
+        width: 100%;
+        max-width: 760px;
+        margin-left: auto;
+        margin-right: auto;
+      }
+
+      .bottom-nav svg{ width: 30px !important; height: 30px !important; }
+
+      .bottom-nav .tab-icon{
+        width: auto !important;
+        height: auto !important;
+        border-radius: 0 !important;
+        background: transparent !important;
+        border: 0 !important;
+        padding: 0 !important;
+      }
+
+      .bottom-nav .tab-label{ font-size: 9px !important; line-height: 1 !important; margin-top: 6px !important; }
+      .bottom-nav a{ gap: 2px !important; color: rgba(255,255,255,.85) !important; }
+      .bottom-nav a:hover{ color: #fff !important; }
+      .bottom-nav a svg{ stroke: currentColor !important; }
+      .bottom-nav .tab-label{ color: currentColor !important; }
+
+      /* Active tab */
+      .bottom-nav a.text-blue-600{ color: #fff !important; }
+
+      /* --- Top bar: same blue as kanban --- */
+      header.top-bar{
+        background: var(--brandBlue) !important;
+        border-bottom: 0 !important;
+      }
+
+      header.top-bar .top-inner{
+        padding: 8px 24px 8px !important;
+        gap: 6px !important;
+      }
+
+      header.top-bar .top-actions{
+        margin-top: 18px !important;
+        margin-right: 28px !important;
+      }
+
+      header.top-bar,
+      header.top-bar h1,
+      header.top-bar a,
+      header.top-bar button,
+      header.top-bar input,
+      header.top-bar select,
+      header.top-bar label{ color: #ffffff !important; }
+
+      header.top-bar svg{ stroke: currentColor !important; }
+
+      header.top-bar input,
+      header.top-bar select{
+        background: rgba(255,255,255,.14) !important;
+        border: 1px solid rgba(255,255,255,.22) !important;
+      }
+
+      header.top-bar input::placeholder{ color: rgba(255,255,255,.75) !important; }
+      header.top-bar select option{ color: #0f172a; }
+
+      /* Avatar in top bar should be translucent, not solid white */
+      header.top-bar .top-avatar{
+        background: rgba(255,255,255,.12) !important;
+        border-color: rgba(255,255,255,.22) !important;
+        color: #ffffff !important;
+      }
+      header.top-bar .top-avatar:hover{ background: rgba(255,255,255,.18) !important; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-900 min-h-screen font-sans overflow-y-auto">
+
+    <!-- TOP BAR -->
+    <header class="top-bar">
+        <div class="top-inner max-w-[1800px] mx-auto flex items-center justify-between gap-4">
+            <!-- Left: Title -->
+            <div class="flex items-center gap-3">
+                <h1 class="text-xl font-bold text-slate-800 tracking-tight">Soporte Técnico – Operaciones</h1>
+                <span class="hidden md:block text-slate-300">|</span>
+            </div>
+
+            <!-- Right: Search & Icons -->
+            <div class="top-actions flex items-center gap-4">
+                <div class="relative hidden md:block">
+                    <input type="text" placeholder="Buscar..." class="pl-9 pr-4 py-1.5 bg-slate-100 border-none rounded-full text-sm w-64 focus:ring-2 focus:ring-blue-500 transition-all">
+                    <svg class="w-4 h-4 absolute left-3 top-2.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                </div>
+                
+                <div class="flex items-center gap-3 border-l border-slate-200 pl-4">
+                    <button class="relative text-slate-500 hover:text-blue-600 transition-colors">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
+                        <span class="absolute top-0.5 right-0.5 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>
+                    </button>
+                    <a href="Ajustes.html" class="text-slate-500 hover:text-blue-600 transition-colors">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                    </a>
+                    <div class="top-avatar w-9 h-9 rounded-full flex items-center justify-center font-bold text-sm shadow-md ring-2 ring-white">
+                        JP
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN CONTENT -->
+    <main id="profilePage" class="main-content max-w-4xl mx-auto w-full p-4 md:p-8 flex flex-col">
+
+
+        <div class="w-full bg-white rounded-3xl border border-slate-200 shadow-xl overflow-visible">
+            
+            <!-- Card Header: Profile Image & Name -->
+            <div class="bg-slate-50/50 p-8 border-b border-slate-100 text-center flex flex-col items-center">
+                <div class="relative group">
+                    <!-- Circular Fixed Avatar (128px) -->
+                    <div id="profileAvatar" class="w-32 h-32 bg-blue-100 rounded-full border-4 border-white shadow-lg flex items-center justify-center text-blue-600 font-bold text-4xl">
+                        JP
+                    </div>
+                    <!-- Online Status Dot -->
+                    <span class="absolute bottom-2 right-2 w-6 h-6 bg-emerald-500 border-4 border-white rounded-full shadow-sm"></span>
+                </div>
+                
+                <h2 id="profileName" class="mt-4 text-2xl font-bold text-slate-800">Juan Pérez</h2>
+                <div id="profileRole" class="mt-2 inline-flex items-center px-4 py-1 rounded-full bg-blue-100 text-blue-700 text-xs font-bold uppercase tracking-wide">
+                    Coordinador de Operaciones
+                </div>
+                <p id="profileIdLine"class="mt-2 text-slate-400 font-mono text-xs">ID: ISP-9942</p>
+            </div>
+
+            <!-- Card Body: Details Section -->
+            <div class="p-6 md:p-10 grid grid-cols-1 md:grid-cols-2 gap-y-6 gap-x-12">
+                <div class="flex flex-col gap-1">
+                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Nombre Completo</span>
+                    <p id="profileFullName" class="text-sm font-semibold text-slate-700">Juan Pérez García</p>
+                </div>
+                
+                <div class="flex flex-col gap-1">
+                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Correo electrónico</span>
+                    <p id="profileEmail" class="text-sm font-semibold text-slate-700">jperez@isp-tech.com</p>
+                </div>
+
+                <div class="flex flex-col gap-1">
+                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Usuario / ID</span>
+                    <p id="profileUserId" class="text-sm font-mono font-bold text-blue-600">ISP-9942</p>
+                </div>
+
+                <div class="flex flex-col gap-1">
+                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Zona Asignada</span>
+                    <div class="flex items-center gap-2">
+                        <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                        <p id="profileZone" class="text-sm font-semibold text-slate-700">Zona Norte – Sector 4</p>
+                    </div>
+                </div>
+
+                <div class="flex flex-col gap-1">
+                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Última conexión</span>
+                    <p id="profileLastSeen" class="text-sm font-semibold text-slate-500">Hoy, 08:30 AM</p>
+                </div>
+            </div>
+
+            <!-- Card Footer: Actions -->
+            <div class="p-8 bg-slate-50/30 border-t border-slate-100 flex justify-center">
+                <button id="btnLogout" type="button" class="px-10 py-3 bg-white border border-slate-200 text-slate-600 rounded-2xl font-bold text-sm shadow-sm hover:bg-slate-50 hover:text-red-600 hover:border-red-100 transition-all active:scale-95">
+  Cerrar sesión
+</button>
+
+            </div>
+        </div>
+    </main>
+
+    <!-- BOTTOM TAB BAR (nuevo diseño + rutas correctas) -->
+<nav class="bottom-nav">
+  <div class="bottom-nav-inner w-full max-w-[860px] mx-auto px-5 py-0">
+    <div class="flex justify-between items-start w-full gap-8">
+
+      <!-- TICKETS -->
+      <a href="./kanban.html" class="flex flex-col items-center gap-1 text-slate-400 hover:text-blue-500 transition-colors">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <rect x="5" y="6" width="14" height="12" rx="2" ry="2" stroke-width="2" />
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M5 9.5c1 0 1.8.8 1.8 1.8S6 13.1 5 13.1M19 9.5c-1 0-1.8.8-1.8 1.8S18 13.1 19 13.1" />
+          <path stroke-linecap="round" stroke-width="2" stroke-dasharray="2 2" d="M12 7.5v9" />
+        </svg>
+        <span class="text-[10px] font-bold uppercase tracking-tighter">Tickets</span>
+      </a>
+
+      <!-- UBICACIÓN -->
+      <a href="./map.html" class="flex flex-col items-center gap-1 text-slate-400 hover:text-blue-500 transition-colors">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M12 21s7-5.25 7-11a7 7 0 10-14 0c0 5.75 7 11 7 11z" />
+          <circle cx="12" cy="8.8" r="2.25" stroke-width="2" />
+        </svg>
+        <span class="text-[10px] font-bold uppercase tracking-tighter">Ubicación</span>
+      </a>
+
+      <!-- INVENTARIO -->
+      <a href="./inventario.html" class="flex flex-col items-center gap-1 text-slate-400 hover:text-blue-500 transition-colors">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 2l9 5-9 5-9-5 9-5z" />
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10l9 5 9-5V7" />
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 12v10" />
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 7l-9 5-9-5" />
+        </svg>
+        <span class="text-[10px] font-bold uppercase tracking-tighter">Inventario</span>
+      </a>
+
+    </div>
+  </div>
+</nav>
+
+
+    <script>
+  const btnLogout = document.getElementById("btnLogout");
+
+  if (btnLogout) {
+    btnLogout.addEventListener("click", async (e) => {
+      // 🔥 Mata cualquier listener del router/app
+      e.preventDefault();
+      e.stopPropagation();
+      e.stopImmediatePropagation();
+
+      const loginUrl = new URL("./login.html", window.location.href).toString();
+
+      try {
+        await sb.auth.signOut();
+      } catch (_) {
+        // da igual: aunque falle, forzamos salida
+      } finally {
+        // ✅ redirect duro, a prueba de router
+        window.location.replace(loginUrl);
+      }
+    }, true); // 👈 CAPTURE = true (clave)
+  }
+</script>
+
+
+
+
+    <!-- App Entry Point -->
+    <script type="module" src="../js/app.js"></script>
+</body>
+</html>

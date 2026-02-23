@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Kanban | Soporte Técnico ISP</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="../css/styles.css" />
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: "#3b82f6",
+            secondary: "#64748b",
+          },
+        },
+      },
+    };
+  </script>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <!-- Auth Gate: protect page -->
+  <script>
+    const SUPABASE_URL = "https://itkxgkxjwulfzklxyxke.supabase.co";
+    const SUPABASE_ANON_KEY = "sb_publishable_P2SJ7etHApOmvH2zXCeMng_hthMCXhA";
+
+    const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    sb.auth.getSession().then(({ data, error }) => {
+      if (error || !data.session) {
+        window.location.replace("login.html");
+      }
+    });
+  </script>
+
+  <style>
+    .kanban-column {
+      min-width: 280px;
+      max-width: 280px;
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      height: 8px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: #f1f5f9;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 10px;
+    }
+    /* --- Bottom tab bar sizing (thinner bar + slightly smaller icons) --- */
+    :root{ --bottomNavH: 72px; --brandBlue: #2563eb; }
+
+    .bottom-nav{
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: var(--bottomNavH);
+      padding-top: 6px !important;   /* icons breathe from the top */
+      padding-bottom: 8px !important;
+    }
+
+    .bottom-nav .bottom-nav-inner{
+      height: 100%;
+      padding-top: 0 !important;
+      padding-bottom: 0 !important;
+      display: flex;
+      align-items: center;
+      width: 100%;
+      max-width: 760px; /* bring left/right tabs closer to center */
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .bottom-nav svg{ width: 30px !important; height: 30px !important; }
+
+    /* Icon wrapper: keep for centering, but no boxes around icons */
+    .bottom-nav .tab-icon{
+      width: auto !important;
+      height: auto !important;
+      border-radius: 0 !important;
+      background: transparent !important;
+      border: 0 !important;
+      padding: 0 !important;
+    }
+
+    .bottom-nav .tab-label{ font-size: 9px !important; line-height: 1 !important; margin-top: 6px !important; }
+    .bottom-nav a{ gap: 2px !important; }
+
+    /* Ensure content doesn't reserve an oversized space for the nav */
+    main.main-content{ padding-bottom: var(--bottomNavH) !important; }
+
+    /* --- Bottom nav: blue background + white icons/labels --- */
+    .bottom-nav{
+      background: var(--brandBlue) !important; /* brand blue */
+      border-top: 0 !important;
+    }
+    .bottom-nav a{ color: rgba(255,255,255,.85) !important; }
+    .bottom-nav a:hover{ color: #fff !important; }
+    .bottom-nav a svg{ stroke: currentColor !important; }
+    .bottom-nav .tab-label{ color: currentColor !important; }
+
+    /* Active tab */
+    .bottom-nav a.text-blue-600{ color: #fff !important; }
+
+    /* Inactive tabs */
+    .bottom-nav a.text-slate-400{ color: rgba(255,255,255,.75) !important; }
+
+    /* --- TOP BAR: same blue as bottom bar + red text --- */
+    header.top-bar{
+      background: var(--brandBlue) !important; /* match bottom nav */
+      border-bottom: 0 !important;
+    }
+
+    /* Give the top bar more blue breathing room */
+    header.top-bar .top-inner{
+      padding: 8px 24px 8px !important; /* slimmer bar */
+      gap: 6px !important;              /* bring rows closer */
+    }
+
+    header.top-bar .top-actions{
+      /* Align actions (bell/gear/avatar) a bit lower and not so far right */
+      margin-top: 18px !important;   /* a little more down */
+      margin-right: 28px !important; /* pull in from the far right */
+    }
+
+    /* Pull the filters row a bit closer to the title */
+    header.top-bar .top-filters{ margin-top: -6px !important; }
+
+    /* Make avatar translucent on blue so white initials read well */
+    header.top-bar .top-avatar{
+      background: rgba(255,255,255,.12) !important;
+      border-color: rgba(255,255,255,.22) !important;
+      color: #ffffff !important;
+    }
+    header.top-bar .top-avatar:hover{
+      background: rgba(255,255,255,.18) !important;
+    }
+
+    /* Make the "black" text red as requested */
+    header.top-bar,
+    header.top-bar h1,
+    header.top-bar a,
+    header.top-bar button,
+    header.top-bar input,
+    header.top-bar select{
+      color: #ffffff !important; /* red */
+    }
+
+    header.top-bar svg{ stroke: currentColor !important; }
+
+    /* Slightly smaller elements in the top bar */
+    header.top-bar h1{ font-size: 1.05rem !important; } /* between text-lg and text-xl */
+
+    header.top-bar .top-actions svg{ width: 24px !important; height: 24px !important; }
+
+    header.top-bar .top-avatar{
+      width: 30px !important;
+      height: 30px !important;
+      font-size: 11px !important;
+    }
+
+    header.top-bar input,
+    header.top-bar select{
+      padding-top: 6px !important;
+      padding-bottom: 6px !important;
+      font-size: 12px !important;
+    }
+
+    header.top-bar #searchInput{ width: 240px !important; }
+
+    /* Keep the icons visually centered after pushing the actions down */
+    header.top-bar .top-actions button,
+    header.top-bar .top-actions a{
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Inputs / selects need contrast on blue */
+    header.top-bar input,
+    header.top-bar select{
+      background: rgba(255,255,255,.14) !important;
+      border: 1px solid rgba(255,255,255,.22) !important;
+    }
+
+    header.top-bar input::placeholder{ color: rgba(255, 255, 255, 0.75) !important; }
+
+    /* Keep dropdown options readable when opened */
+    header.top-bar select option{ color: #0f172a; }
+
+  </style>
+</head>
+
+<body class="bg-slate-50 text-slate-900 flex flex-col min-h-screen">
+
+<!-- TOP BAR -->
+<header class="top-bar">
+  <div class="top-inner max-w-[1800px] mx-auto flex flex-col gap-3">
+
+    <div class="flex items-center justify-between">
+      <h1 class="text-xl font-bold">Soporte Técnico - Lander</h1>
+
+     <div class="top-actions flex items-center gap-3">
+  <!-- Notificaciones -->
+  <button class="relative text-slate-500 hover:text-blue-600 transition-colors">
+    <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+        d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
+    </svg>
+  </button>
+
+  <!-- Ajustes (MISMO SVG/ESTILO QUE map.html) -->
+  <a href="Ajustes.html" class="text-slate-500 hover:text-blue-600 transition-colors" aria-label="Ajustes">
+    <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+        d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+    </svg>
+  </a>
+
+  <!-- Avatar (igual que ya lo tienes) -->
+  <a href="./perfil.html" class="top-avatar w-8 h-8 bg-blue-100 rounded-full border border-blue-200 flex items-center justify-center text-blue-600 font-bold text-xs hover:brightness-95 transition">
+    JD
+  </a>
+</div>
+
+
+    </div>
+
+    <!-- FILTROS -->
+    <div class="top-filters flex flex-wrap items-center gap-2">
+
+      <div class="relative hidden sm:block">
+        <input
+          id="searchInput"
+          type="text"
+          placeholder="Buscar ticket..."
+          class="pl-9 pr-4 py-1.5 bg-slate-100 border-none rounded-full text-sm w-64 focus:ring-2 focus:ring-blue-500"
+        />
+        <svg class="w-4 h-4 absolute left-3 top-2.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+        </svg>
+      </div>
+
+      <select id="filterStatus" class="bg-white border border-slate-200 rounded-lg px-3 py-1.5 text-xs">
+        <option value="all">Todos los Estados</option>
+        <option value="nuevo">Nuevo</option>
+        <option value="en_revision">En Revisión</option>
+        <option value="asignado">Asignado</option>
+        <option value="en_visita">En Visita</option>
+        <option value="en_espera">En Espera</option>
+        <option value="resuelto">Resuelto</option>
+        <option value="cerrado">Cerrado</option>
+      </select>
+
+      <select id="filterPriority" class="bg-white border border-slate-200 rounded-lg px-3 py-1.5 text-xs">
+        <option value="all">Prioridad</option>
+        <option value="alta">Alta</option>
+        <option value="media">Media</option>
+        <option value="baja">Baja</option>
+      </select>
+
+      <select id="filterZone" class="bg-white border border-slate-200 rounded-lg px-3 py-1.5 text-xs">
+        <option value="all">Zonas</option>
+        <option value="Norte">Norte</option>
+        <option value="Sur">Sur</option>
+        <option value="Centro">Centro</option>
+        <option value="Poniente">Poniente</option>
+      </select>
+
+      <button id="clearFilters" class="text-xs text-blue-600 font-bold px-2 hover:underline">
+        Limpiar
+      </button>
+    </div>
+
+  </div>
+</header>
+
+<!-- KANBAN -->
+<main class="main-content">
+
+  <div class="h-full overflow-x-auto p-6 custom-scrollbar">
+    <div class="flex gap-4 min-w-max">
+
+      <!-- COLUMNA TEMPLATE -->
+      <template id="kanban-column">
+        <div class="kanban-column flex flex-col gap-3 w-[280px] min-w-[280px] shrink-0">
+          <div class="flex items-center justify-between px-2 mb-1">
+            <h2 class="text-xs font-bold uppercase text-slate-500"></h2>
+            <span class="bg-slate-200 text-slate-600 text-[10px] px-2 py-0.5 rounded-full font-bold">0</span>
+          </div>
+          <div class="flex flex-col gap-3"></div>
+        </div>
+      </template>
+
+      <!-- Columnas -->
+      <!-- NUEVO -->
+      <div class="bg-slate-50 rounded-2xl p-3 border border-slate-200 w-[280px] min-w-[280px] shrink-0">
+        <div class="flex items-center justify-between mb-3">
+          <h3 class="text-xs font-bold uppercase text-slate-500">Nuevo</h3>
+          <span data-count="nuevo" class="text-xs font-bold bg-slate-200 text-slate-700 px-2 py-0.5 rounded-full">0</span>
+        </div>
+        <div data-col="nuevo" class="space-y-3"></div>
+      </div>
+
+      <!-- EN REVISIÓN -->
+      <div class="bg-slate-50 rounded-2xl p-3 border border-slate-200 w-[280px] min-w-[280px] shrink-0">
+        <div class="flex items-center justify-between mb-3">
+          <h3 class="text-xs font-bold uppercase text-slate-500">En revisión</h3>
+          <span data-count="en_revision" class="text-xs font-bold bg-slate-200 text-slate-700 px-2 py-0.5 rounded-full">0</span>
+        </div>
+        <div data-col="en_revision" class="space-y-3"></div>
+      </div>
+
+<!-- ASIGNADO -->
+    <div class="bg-slate-50 rounded-2xl p-3 border border-slate-200 w-[280px] min-w-[280px] shrink-0">
+      <div class="flex items-center justify-between mb-3">
+        <h3 class="text-xs font-bold uppercase text-slate-500">Asignado</h3>
+        <span data-count="asignado" class="text-xs font-bold bg-slate-200 text-slate-700 px-2 py-0.5 rounded-full">0</span>
+      </div>
+      <div data-col="asignado" class="space-y-3"></div>
+    </div>
+
+    <!-- EN VISITA -->
+    <div class="bg-slate-50 rounded-2xl p-3 border border-slate-200 w-[280px] min-w-[280px] shrink-0">
+      <div class="flex items-center justify-between mb-3">
+        <h3 class="text-xs font-bold uppercase text-slate-500">En visita</h3>
+        <span data-count="en_visita" class="text-xs font-bold bg-slate-200 text-slate-700 px-2 py-0.5 rounded-full">0</span>
+      </div>
+      <div data-col="en_visita" class="space-y-3"></div>
+    </div>
+
+    <!-- EN ESPERA -->
+    <div class="bg-slate-50 rounded-2xl p-3 border border-slate-200 w-[280px] min-w-[280px] shrink-0">
+      <div class="flex items-center justify-between mb-3">
+        <h3 class="text-xs font-bold uppercase text-slate-500">En espera</h3>
+        <span data-count="en_espera" class="text-xs font-bold bg-slate-200 text-slate-700 px-2 py-0.5 rounded-full">0</span>
+      </div>
+      <div data-col="en_espera" class="space-y-3"></div>
+    </div>
+
+    <!-- RESUELTO -->
+    <div class="bg-slate-50 rounded-2xl p-3 border border-slate-200 w-[280px] min-w-[280px] shrink-0">
+      <div class="flex items-center justify-between mb-3">
+        <h3 class="text-xs font-bold uppercase text-slate-500">Resuelto</h3>
+        <span data-count="resuelto" class="text-xs font-bold bg-slate-200 text-slate-700 px-2 py-0.5 rounded-full">0</span>
+      </div>
+      <div data-col="resuelto" class="space-y-3"></div>
+    </div>
+
+    <!-- CERRADO -->
+    
+<div class="bg-slate-50 rounded-2xl p-3 border border-slate-200 w-[280px] min-w-[280px] shrink-0">
+
+  <div class="flex items-center justify-between mb-3">
+    <h3 class="text-xs font-bold uppercase text-slate-500">Cerrado</h3>
+
+    <div class="flex items-center gap-2">
+      <span data-count="cerrado"
+        class="text-xs font-bold bg-slate-200 text-slate-700 px-2 py-0.5 rounded-full">
+        0
+      </span>
+
+      <a href="./cerrados.html"
+        class="text-[10px] font-bold text-blue-600 hover:underline">
+        Ver todos
+      </a>
+    </div>
+  </div>
+
+  <div data-col="cerrado" class="space-y-3"></div>
+</div>
+
+      <!-- Repite el patrón para las demás columnas -->
+      <!-- en_revision, asignado, en_visita, en_espera, resuelto, cerrado -->
+      <!-- (ya están bien definidas en tu archivo original) -->
+
+    </div>
+  </div>
+</main>
+
+<!-- BOTTOM TAB BAR (nuevo diseño) -->
+<nav class="bottom-nav">
+  <div class="bottom-nav-inner w-full max-w-[860px] mx-auto px-5 py-0">
+    <div class="flex justify-between items-start w-full gap-8">
+
+      <!-- TICKETS (active) -->
+      <a href="./kanban.html" class="flex flex-col items-center gap-1 text-blue-600">
+        <div class="tab-icon flex items-center justify-center">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <!-- More rectangular ticket -->
+            <rect x="5" y="6" width="14" height="12" rx="2" ry="2" stroke-width="2" />
+            <!-- small side notches -->
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M5 9.5c1 0 1.8.8 1.8 1.8S6 13.1 5 13.1M19 9.5c-1 0-1.8.8-1.8 1.8S18 13.1 19 13.1" />
+            <!-- perforation line -->
+            <path stroke-linecap="round" stroke-width="2" stroke-dasharray="2 2" d="M12 7.5v9" />
+          </svg>
+        </div>
+        <span class="tab-label font-bold uppercase tracking-tighter">Tickets</span>
+      </a>
+
+      <!-- UBICACIÓN -->
+      <a href="./map.html" class="flex flex-col items-center gap-1 text-slate-400 hover:text-blue-500 transition-colors">
+        <div class="tab-icon flex items-center justify-center">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M12 21s7-5.25 7-11a7 7 0 10-14 0c0 5.75 7 11 7 11z" />
+            <circle cx="12" cy="8.8" r="2.25" stroke-width="2" />
+          </svg>
+        </div>
+        <span class="tab-label font-bold uppercase tracking-tighter">Ubicación</span>
+      </a>
+
+      <!-- INVENTARIO -->
+      <a href="./inventario.html" class="flex flex-col items-center gap-1 text-slate-400 hover:text-blue-500 transition-colors">
+        <div class="tab-icon flex items-center justify-center">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <!-- 3D box/cube -->
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M12 2l9 5-9 5-9-5 9-5z" />
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M3 7v10l9 5 9-5V7" />
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M12 12v10" />
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M21 7l-9 5-9-5" />
+          </svg>
+        </div>
+        <span class="tab-label font-bold uppercase tracking-tighter">Inventario</span>
+      </a>
+
+    </div>
+  </div>
+</nav>
+
+<!-- MODAL EDITAR TICKET -->
+<div
+  id="editTicketModal"
+  class="fixed inset-0 bg-black/40 flex items-center justify-center z-50 hidden"
+>
+  <div class="bg-white rounded-2xl w-full max-w-md p-5 shadow-xl">
+    <h3 class="text-lg font-bold text-slate-800 mb-4">
+      Editar ticket
+    </h3>
+
+    <form id="editTicketForm" class="space-y-3">
+      <input type="hidden" id="editTicketId" />
+
+      <!-- Cliente -->
+      <div>
+        <label class="block text-xs text-slate-500 mb-1">Cliente</label>
+        <input
+          id="editCliente"
+          type="text"
+          class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm"
+        />
+      </div>
+
+      <!-- Zona -->
+      <div>
+        <label class="block text-xs text-slate-500 mb-1">Zona</label>
+        <input
+          id="editZona"
+          type="text"
+          class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm"
+        />
+      </div>
+
+      <!-- Prioridad -->
+      <div>
+        <label class="block text-xs text-slate-500 mb-1">Prioridad</label>
+        <select
+          id="editPrioridad"
+          class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm"
+        >
+          <option value="alta">Alta</option>
+          <option value="media">Media</option>
+          <option value="baja">Baja</option>
+        </select>
+      </div>
+
+      <!-- Botones -->
+      <div class="flex justify-end gap-2 pt-4">
+        <button
+          type="button"
+          id="cancelEditTicket"
+          class="px-4 py-2 text-sm text-slate-600 hover:text-slate-800"
+        >
+          Cancelar
+        </button>
+        <button
+          type="submit"
+          class="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700"
+        >
+          Guardar cambios
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<!-- App principal del Kanban -->
+<script type="module" src="../js/app.js"></script>
+</body>
+</html>

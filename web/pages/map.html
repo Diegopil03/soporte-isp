@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mapa | Soporte Técnico ISP</title>
+
+  <!-- Tailwind -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="../css/styles.css" />
+
+  <!-- Leaflet -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    :root{ --bottomNavH: 72px; --brandBlue: #2563eb; }
+
+    /* Map should fill the remaining space of the flex layout */
+    #map{ height: 100%; }
+
+    /* Leave space for fixed bottom nav */
+    main.main-content{ padding-bottom: var(--bottomNavH); }
+
+    /* --- Bottom tab bar (same as kanban) --- */
+    .bottom-nav{
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: var(--bottomNavH);
+      padding-top: 6px !important;
+      padding-bottom: 8px !important;
+      background: var(--brandBlue) !important;
+      border-top: 0 !important;
+      z-index: 50;
+    }
+
+    .bottom-nav .bottom-nav-inner{
+      height: 100%;
+      display: flex;
+      align-items: center;
+      width: 100%;
+      max-width: 760px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .bottom-nav svg{ width: 30px !important; height: 30px !important; }
+
+    .bottom-nav .tab-icon{
+      width: auto !important;
+      height: auto !important;
+      border-radius: 0 !important;
+      background: transparent !important;
+      border: 0 !important;
+      padding: 0 !important;
+    }
+
+    .bottom-nav .tab-label{
+      font-size: 9px !important;
+      line-height: 1 !important;
+      margin-top: 6px !important;
+    }
+
+    .bottom-nav a{ gap: 2px !important; color: rgba(255,255,255,.75) !important; }
+    .bottom-nav a:hover{ color: #fff !important; }
+    .bottom-nav a svg{ stroke: currentColor !important; }
+    .bottom-nav .tab-label{ color: currentColor !important; }
+
+    /* Active tab */
+    .bottom-nav a.text-blue-600{ color: #fff !important; }
+
+    /* --- TOP BAR: blue like bottom bar --- */
+    header.top-bar{
+      background: var(--brandBlue) !important;
+      border-bottom: 0 !important;
+    }
+
+    header.top-bar,
+    header.top-bar h1,
+    header.top-bar a,
+    header.top-bar button,
+    header.top-bar input,
+    header.top-bar select,
+    header.top-bar label{ color: #ffffff !important; }
+
+    header.top-bar svg{ stroke: currentColor !important; }
+
+    /* --- Match Kanban top-bar sizing/spacing --- */
+    header.top-bar .top-inner{
+      padding-top: 12px !important;
+      padding-bottom: 10px !important;
+      gap: 8px !important;
+    }
+
+    /* --- Top-right actions: same position as kanban (a bit lower + pulled in) --- */
+    header.top-bar .top-actions{
+      margin-top: 18px !important;
+      margin-right: 28px !important;
+    }
+
+    /* Pull the filters row a bit closer to the title (same as kanban) */
+    header.top-bar .top-filters{ margin-top: -6px !important; }
+
+    header.top-bar .top-actions button,
+    header.top-bar .top-actions a{
+      padding: 6px !important; /* smaller hit area */
+    }
+
+    header.top-bar .top-actions svg{
+      width: 22px !important;
+      height: 22px !important;
+    }
+
+    header.top-bar .top-actions .top-avatar{
+      width: 32px !important;
+      height: 32px !important;
+      font-size: 11px !important;
+    }
+
+    /* Inputs/selects contrast on blue */
+    header.top-bar input,
+    header.top-bar select{
+      background: rgba(255,255,255,.14) !important;
+      border: 1px solid rgba(255,255,255,.22) !important;
+    }
+
+    header.top-bar input::placeholder{ color: rgba(255,255,255,.75) !important; }
+    header.top-bar select option{ color: #0f172a; }
+
+    /* Make action buttons readable on blue */
+    header.top-bar #routeOptimizeBtn{
+      background: rgba(255,255,255,.18) !important;
+      border: 1px solid rgba(255,255,255,.22) !important;
+    }
+    header.top-bar #routeOptimizeBtn:hover{ background: rgba(255,255,255,.26) !important; }
+
+    header.top-bar #routeClearBtn{
+      background: rgba(15,23,42,.18) !important;
+      border: 1px solid rgba(255,255,255,.18) !important;
+      color: #fff !important;
+    }
+    header.top-bar #routeClearBtn:hover{ background: rgba(15,23,42,.28) !important; }
+
+    header.top-bar #routeStats{ color: rgba(255,255,255,.85) !important; }
+
+    /* --- Colorful map markers (clients) --- */
+    .ticket-marker{ position: relative; width: 18px; height: 18px; }
+    .ticket-marker .dot{
+      width: 16px;
+      height: 16px;
+      border-radius: 9999px;
+      border: 2px solid rgba(255,255,255,.95);
+      box-shadow: 0 6px 16px rgba(0,0,0,.25);
+      transform: translate(-50%, -50%);
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      background: var(--c, #22c55e);
+    }
+    .ticket-marker .ring{
+      width: 16px;
+      height: 16px;
+      border-radius: 9999px;
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      background: transparent;
+      animation: markerPulse 1.8s ease-out infinite;
+      border: 2px solid rgba(255,255,255,.35);
+      opacity: .9;
+    }
+    @keyframes markerPulse{
+      0%{ transform: translate(-50%, -50%) scale(1); opacity: .9; }
+      70%{ transform: translate(-50%, -50%) scale(1.9); opacity: 0; }
+      100%{ transform: translate(-50%, -50%) scale(2.1); opacity: 0; }
+    }
+    .leaflet-marker-icon.ticket-icon:hover{ transform: scale(1.08); }
+
+    /* Route animation dot */
+    .route-anim-dot{
+      width: 10px;
+      height: 10px;
+      border-radius: 9999px;
+      background: #ffffff;
+      border: 2px solid rgba(255,255,255,.9);
+      box-shadow: 0 6px 16px rgba(0,0,0,.25);
+    }
+  </style>
+</head>
+
+<body class="bg-slate-50 text-slate-900 min-h-screen flex flex-col">
+
+<!-- TOP BAR -->
+<header class="top-bar">
+  <div class="top-inner max-w-[1800px] mx-auto flex flex-col px-6">
+
+    <div class="flex items-center justify-between">
+      <h1 class="text-xl font-bold">Mapa de Tickets</h1>
+
+      <!-- Top right actions (same style as kanban) -->
+      <div class="top-actions flex items-center gap-3">
+        <!-- Notificaciones -->
+        <button type="button" class="p-2 rounded-lg hover:bg-white/10 transition" aria-label="Notificaciones">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" class="w-6 h-6">
+            <path d="M15 17H9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <path d="M18 8a6 6 0 10-12 0c0 7-3 7-3 7h18s-3 0-3-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M13.73 21a2 2 0 01-3.46 0" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </button>
+
+        <!-- Ajustes -->
+        <a href="./ajustes.html" class="p-2 rounded-lg hover:bg-white/10 transition" aria-label="Ajustes">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" class="w-6 h-6">
+            <path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z" stroke="currentColor" stroke-width="2"/>
+            <path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.03.03a2 2 0 0 1-1.41 3.41h-.08a2 2 0 0 1-1.41-.58l-.03-.03a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1 1.54V21a2 2 0 0 1-4 0v-.08a1.7 1.7 0 0 0-1-1.54 1.7 1.7 0 0 0-1.87.34l-.03.03A2 2 0 0 1 3.7 18.36v-.08a2 2 0 0 1 .58-1.41l.03-.03A1.7 1.7 0 0 0 4.65 15a1.7 1.7 0 0 0-1.54-1H3a2 2 0 0 1 0-4h.08a1.7 1.7 0 0 0 1.54-1 1.7 1.7 0 0 0-.34-1.87l-.03-.03A2 2 0 0 1 5.66 3.7h.08a2 2 0 0 1 1.41.58l.03.03A1.7 1.7 0 0 0 9 4.65a1.7 1.7 0 0 0 1-1.54V3a2 2 0 0 1 4 0v.08a1.7 1.7 0 0 0 1 1.54 1.7 1.7 0 0 0 1.87-.34l.03-.03A2 2 0 0 1 20.3 5.66v.08a2 2 0 0 1-.58 1.41l-.03.03A1.7 1.7 0 0 0 19.35 9c.25.67.87 1.11 1.58 1.11H21a2 2 0 0 1 0 4h-.08c-.71 0-1.33.44-1.58 1.11Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </a>
+
+        <!-- Perfil -->
+        <a href="./perfil.html" class="top-avatar w-10 h-10 rounded-full border border-white/25 bg-white/10 flex items-center justify-center font-bold" aria-label="Perfil">
+          <span id="userInitials">JD</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- FILTROS + ACCIONES -->
+    <div class="top-filters flex flex-wrap items-center gap-2">
+
+      <!-- Filtros -->
+      <select id="mapFilterStatus" class="rounded-lg px-3 py-1.5 text-xs">
+        <option value="all">Todos los estados</option>
+        <option value="nuevo">Nuevo</option>
+        <option value="en_revision">En revisión</option>
+        <option value="asignado">Asignado</option>
+        <option value="en_visita">En visita</option>
+        <option value="en_espera">En espera</option>
+        <option value="resuelto">Resuelto</option>
+        <option value="cerrado">Cerrado</option>
+      </select>
+
+      <select id="mapFilterPriority" class="rounded-lg px-3 py-1.5 text-xs">
+        <option value="all">Todas las prioridades</option>
+        <option value="alta">Alta</option>
+        <option value="media">Media</option>
+        <option value="baja">Baja</option>
+      </select>
+
+      <select id="mapFilterZone" class="rounded-lg px-3 py-1.5 text-xs">
+        <option value="all">Todas las zonas</option>
+        <option value="Norte">Yautepec</option>
+        <option value="Sur">Cuautla</option>
+        <option value="Centro">Yecapixtla</option>
+      </select>
+
+      <button id="mapClearFilters" class="text-xs font-bold px-2 hover:underline" type="button">
+        Limpiar filtros
+      </button>
+
+      <!-- ACCIONES DE RUTA -->
+      <div class="flex items-center gap-2 flex-wrap ml-2">
+        <button id="routeOptimizeBtn" class="text-white text-xs font-bold px-3 py-2 rounded-xl transition" type="button">
+          Optimizar ruta
+        </button>
+
+        <button id="routeClearBtn" class="text-xs font-bold px-3 py-2 rounded-xl transition" type="button">
+          Limpiar ruta
+        </button>
+
+        <div id="routeStats" class="text-xs font-medium"></div>
+      </div>
+    </div>
+
+  </div>
+</header>
+
+<!-- MAIN -->
+<main class="main-content flex-1 flex">
+
+  <!-- LISTA LATERAL -->
+  <aside class="w-[320px] border-r border-slate-200 bg-white p-4 overflow-y-auto">
+    <div class="flex items-center justify-between mb-3">
+      <h2 class="text-sm font-bold text-slate-800">Tickets visibles</h2>
+      <span id="mapCount" class="text-xs text-slate-500">0</span>
+    </div>
+
+    <div id="ticketsList" class="space-y-3">
+      <!-- tarjetas -->
+    </div>
+  </aside>
+
+  <!-- MAPA -->
+  <section class="flex-1">
+    <div id="map"></div>
+  </section>
+
+</main>
+
+<!-- BOTTOM TAB BAR (mismo diseño que kanban) -->
+<nav class="bottom-nav">
+  <div class="bottom-nav-inner w-full max-w-[860px] mx-auto px-5 py-0">
+    <div class="flex justify-between items-start w-full gap-8">
+
+      <!-- TICKETS -->
+      <a href="./kanban.html" class="flex flex-col items-center gap-1 text-slate-400 hover:text-blue-500 transition-colors">
+        <div class="tab-icon flex items-center justify-center">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <rect x="5" y="6" width="14" height="12" rx="2" ry="2" stroke-width="2" />
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 9.5c1 0 1.8.8 1.8 1.8S6 13.1 5 13.1M19 9.5c-1 0-1.8.8-1.8 1.8S18 13.1 19 13.1" />
+            <path stroke-linecap="round" stroke-width="2" stroke-dasharray="2 2" d="M12 7.5v9" />
+          </svg>
+        </div>
+        <span class="tab-label font-bold uppercase tracking-tighter">Tickets</span>
+      </a>
+
+      <!-- UBICACIÓN (active) -->
+      <a href="./map.html" class="flex flex-col items-center gap-1 text-blue-600">
+        <div class="tab-icon flex items-center justify-center">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 21s7-5.25 7-11a7 7 0 10-14 0c0 5.75 7 11 7 11z" />
+            <circle cx="12" cy="8.8" r="2.25" stroke-width="2" />
+          </svg>
+        </div>
+        <span class="tab-label font-bold uppercase tracking-tighter">Ubicación</span>
+      </a>
+
+      <!-- INVENTARIO -->
+      <a href="./inventario.html" class="flex flex-col items-center gap-1 text-slate-400 hover:text-blue-500 transition-colors">
+        <div class="tab-icon flex items-center justify-center">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 2l9 5-9 5-9-5 9-5z" />
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10l9 5 9-5V7" />
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 12v10" />
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 7l-9 5-9-5" />
+          </svg>
+        </div>
+        <span class="tab-label font-bold uppercase tracking-tighter">Inventario</span>
+      </a>
+
+    </div>
+  </div>
+</nav>
+
+<!-- MAP UI -->
+<script type="module" src="../js/map-ui.js"></script>
+
+</body>
+</html>

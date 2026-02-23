@@ -1,0 +1,19 @@
+/* === MOBILE KANBAN === */
+@media (max-width: 768px) {
+  .kanban-board {
+    display: flex;
+    gap: 12px;
+    overflow-x: auto;
+    padding-bottom: 16px;
+  }
+
+  .kanban-column {
+    min-width: 280px;
+    flex-shrink: 0;
+  }
+
+  .kanban-card {
+    font-size: 14px;
+    padding: 12px;
+  }
+}

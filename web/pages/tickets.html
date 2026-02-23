@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="es" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tickets | ISP Support System</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Local CSS -->
+    <link rel="stylesheet" href="../css/styles.css" />
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        slate: {
+                            950: '#020617',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-slate-950 text-slate-200 min-h-screen font-sans">
+
+    <!-- Header & Navigation -->
+    <header class="bg-slate-900/80 border-b border-slate-800 sticky top-0 z-50 backdrop-blur-md">
+        <div class="container mx-auto px-4 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-4">
+                <div class="bg-indigo-600 w-10 h-10 rounded flex items-center justify-center font-bold text-white shadow-lg shadow-indigo-500/20">
+                    ISP
+                </div>
+                <h1 class="text-xl font-bold tracking-tight text-white">Tickets</h1>
+            </div>
+            
+            <nav class="hidden md:flex items-center gap-6">
+                <a href="../index.html" class="text-slate-400 hover:text-white transition-colors">Dashboard</a>
+                <a href="./kanban.html" class="text-slate-400 hover:text-white transition-colors">Kanban</a>
+                <a href="./map.html" class="text-slate-400 hover:text-white transition-colors">Mapa</a>
+                <a href="./settings.html" class="text-slate-400 hover:text-white transition-colors">Ajustes</a>
+            </nav>
+
+            <div class="flex items-center gap-3">
+                <div class="text-right hidden sm:block">
+                    <p class="text-xs text-slate-500 uppercase font-semibold">Operador</p>
+                    <p class="text-sm font-medium">Soporte_N1</p>
+                </div>
+                <div class="w-8 h-8 rounded-full bg-slate-700 border border-slate-600"></div>
+            </div>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-4 py-8">
+        
+        <!-- Quick Summary Panel -->
+        <section class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+            <div class="bg-slate-900/40 border border-slate-800 p-5 rounded-xl">
+                <p class="text-slate-500 text-sm font-medium">Total Abiertos</p>
+                <h3 class="text-2xl font-bold text-white mt-1">24</h3>
+            </div>
+            <div class="bg-slate-900/40 border border-slate-800 p-5 rounded-xl border-l-4 border-l-amber-500">
+                <p class="text-slate-500 text-sm font-medium">En Progreso</p>
+                <h3 class="text-2xl font-bold text-white mt-1">12</h3>
+            </div>
+            <div class="bg-slate-900/40 border border-slate-800 p-5 rounded-xl border-l-4 border-l-emerald-500">
+                <p class="text-slate-500 text-sm font-medium">Resueltos Hoy</p>
+                <h3 class="text-2xl font-bold text-white mt-1">18</h3>
+            </div>
+            <div class="bg-slate-900/40 border border-slate-800 p-5 rounded-xl border-l-4 border-l-rose-500">
+                <p class="text-slate-500 text-sm font-medium">Críticos</p>
+                <h3 class="text-2xl font-bold text-white mt-1">05</h3>
+            </div>
+        </section>
+
+        <!-- Top Bar: Controls -->
+        <section class="flex flex-col lg:flex-row gap-4 justify-between items-center mb-6">
+            <div class="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
+                <div class="relative group">
+                    <input type="text" placeholder="Buscar ticket, cliente, zona..." 
+                        class="w-full sm:w-80 bg-slate-900 border border-slate-800 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all" />
+                </div>
+                <select class="bg-slate-900 border border-slate-800 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    <option value="">Todos los Estados</option>
+                    <option value="abierto">Abierto</option>
+                    <option value="progreso">En progreso</option>
+                    <option value="resuelto">Resuelto</option>
+                    <option value="cerrado">Cerrado</option>
+                </select>
+                <select class="bg-slate-900 border border-slate-800 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    <option value="">Prioridad</option>
+                    <option value="alta">Alta</option>
+                    <option value="media">Media</option>
+                    <option value="baja">Baja</option>
+                </select>
+            </div>
+            <button class="w-full lg:w-auto bg-indigo-600 hover:bg-indigo-500 text-white font-semibold px-6 py-2.5 rounded-lg transition-all flex items-center justify-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
+                </svg>
+                Nuevo Ticket
+            </button>
+        </section>
+
+        <!-- Tickets Table -->
+        <section class="bg-slate-900/40 border border-slate-800 rounded-xl overflow-hidden shadow-2xl">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead class="bg-slate-900/60 border-b border-slate-800">
+                        <tr>
+                            <th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-400">Folio</th>
+                            <th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-400">Cliente</th>
+                            <th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-400">Zona</th>
+                            <th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-400">Estado</th>
+                            <th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-400">Prioridad</th>
+                            <th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-400">Técnico</th>
+                            <th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-400">Actualizado</th>
+                            <th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-400">Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-800">
+                        <!-- Row 1 -->
+                        <tr class="hover:bg-slate-800/30 transition-colors">
+                            <td class="px-6 py-4 font-mono text-sm text-indigo-400">#TK-4401</td>
+                            <td class="px-6 py-4">
+                                <div class="font-semibold text-slate-100">Juan Carlos Pérez</div>
+                                <div class="text-xs text-slate-500">ID: 882192</div>
+                            </td>
+                            <td class="px-6 py-4 text-sm">Sector Norte</td>
+                            <td class="px-6 py-4">
+                                <span class="px-2 py-1 rounded text-[10px] font-bold uppercase bg-amber-500/10 text-amber-500 border border-amber-500/20">En Progreso</span>
+                            </td>
+                            <td class="px-6 py-4">
+                                <span class="flex items-center gap-1.5 text-rose-500 font-medium text-sm">
+                                    <span class="w-2 h-2 rounded-full bg-rose-500"></span> Alta
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 text-sm text-slate-300">R. Mendoza</td>
+                            <td class="px-6 py-4 text-sm text-slate-500">Hace 5 min</td>
+                            <td class="px-6 py-4">
+                                <a href="./ticket_detail.html" class="text-indigo-400 hover:text-indigo-300 font-medium text-sm underline-offset-4 hover:underline">Ver detalle</a>
+                            </td>
+                        </tr>
+                        <!-- Row 2 -->
+                        <tr class="hover:bg-slate-800/30 transition-colors">
+                            <td class="px-6 py-4 font-mono text-sm text-indigo-400">#TK-4398</td>
+                            <td class="px-6 py-4">
+                                <div class="font-semibold text-slate-100">María Elena G.</div>
+                                <div class="text-xs text-slate-500">ID: 771201</div>
+                            </td>
+                            <td class="px-6 py-4 text-sm">Centro Histórico</td>
+                            <td class="px-6 py-4">
+                                <span class="px-2 py-1 rounded text-[10px] font-bold uppercase bg-indigo-500/10 text-indigo-500 border border-indigo-500/20">Abierto</span>
+                            </td>
+                            <td class="px-6 py-4">
+                                <span class="flex items-center gap-1.5 text-slate-400 font-medium text-sm">
+                                    <span class="w-2 h-2 rounded-full bg-slate-400"></span> Baja
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 text-sm text-slate-300">Sin asignar</td>
+                            <td class="px-6 py-4 text-sm text-slate-500">Hace 12 min</td>
+                            <td class="px-6 py-4">
+                                <a href="./ticket_detail.html" class="text-indigo-400 hover:text-indigo-300 font-medium text-sm underline-offset-4 hover:underline">Ver detalle</a>
+                            </td>
+                        </tr>
+                        <!-- Row 3 -->
+                        <tr class="hover:bg-slate-800/30 transition-colors">
+                            <td class="px-6 py-4 font-mono text-sm text-indigo-400">#TK-4395</td>
+                            <td class="px-6 py-4">
+                                <div class="font-semibold text-slate-100">Corporativo Luna</div>
+                                <div class="text-xs text-slate-500">ID: 221004</div>
+                            </td>
+                            <td class="px-6 py-4 text-sm">Zona Industrial</td>
+                            <td class="px-6 py-4">
+                                <span class="px-2 py-1 rounded text-[10px] font-bold uppercase bg-rose-500/10 text-rose-500 border border-rose-500/20">Crítico</span>
+                            </td>
+                            <td class="px-6 py-4">
+                                <span class="flex items-center gap-1.5 text-rose-500 font-medium text-sm font-bold">
+                                    <span class="w-2 h-2 rounded-full bg-rose-500 animate-pulse"></span> Alta
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 text-sm text-slate-300">L. Torres</td>
+                            <td class="px-6 py-4 text-sm text-slate-500">Hace 20 min</td>
+                            <td class="px-6 py-4">
+                                <a href="./ticket_detail.html" class="text-indigo-400 hover:text-indigo-300 font-medium text-sm underline-offset-4 hover:underline">Ver detalle</a>
+                            </td>
+                        </tr>
+                        <!-- Row 4 -->
+                        <tr class="hover:bg-slate-800/30 transition-colors">
+                            <td class="px-6 py-4 font-mono text-sm text-indigo-400">#TK-4390</td>
+                            <td class="px-6 py-4">
+                                <div class="font-semibold text-slate-100">Ricardo Silva</div>
+                                <div class="text-xs text-slate-500">ID: 554312</div>
+                            </td>
+                            <td class="px-6 py-4 text-sm">Sector Sur</td>
+                            <td class="px-6 py-4">
+                                <span class="px-2 py-1 rounded text-[10px] font-bold uppercase bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">Resuelto</span>
+                            </td>
+                            <td class="px-6 py-4">
+                                <span class="flex items-center gap-1.5 text-orange-400 font-medium text-sm">
+                                    <span class="w-2 h-2 rounded-full bg-orange-400"></span> Media
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 text-sm text-slate-300">R. Mendoza</td>
+                            <td class="px-6 py-4 text-sm text-slate-500">Hace 1 h</td>
+                            <td class="px-6 py-4">
+                                <a href="./ticket_detail.html" class="text-indigo-400 hover:text-indigo-300 font-medium text-sm underline-offset-4 hover:underline">Ver detalle</a>
+                            </td>
+                        </tr>
+                        <!-- Row 5 -->
+                        <tr class="hover:bg-slate-800/30 transition-colors">
+                            <td class="px-6 py-4 font-mono text-sm text-indigo-400">#TK-4388</td>
+                            <td class="px-6 py-4">
+                                <div class="font-semibold text-slate-100">Ana Belén Ruiz</div>
+                                <div class="text-xs text-slate-500">ID: 102234</div>
+                            </td>
+                            <td class="px-6 py-4 text-sm">Sector Poniente</td>
+                            <td class="px-6 py-4">
+                                <span class="px-2 py-1 rounded text-[10px] font-bold uppercase bg-amber-500/10 text-amber-500 border border-amber-500/20">En Progreso</span>
+                            </td>
+                            <td class="px-6 py-4">
+                                <span class="flex items-center gap-1.5 text-orange-400 font-medium text-sm">
+                                    <span class="w-2 h-2 rounded-full bg-orange-400"></span> Media
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 text-sm text-slate-300">A. Gómez</td>
+                            <td class="px-6 py-4 text-sm text-slate-500">Hace 2 h</td>
+                            <td class="px-6 py-4">
+                                <a href="./ticket_detail.html" class="text-indigo-400 hover:text-indigo-300 font-medium text-sm underline-offset-4 hover:underline">Ver detalle</a>
+                            </td>
+                        </tr>
+                        <!-- Row 6 -->
+                        <tr class="hover:bg-slate-800/30 transition-colors">
+                            <td class="px-6 py-4 font-mono text-sm text-indigo-400">#TK-4385</td>
+                            <td class="px-6 py-4">
+                                <div class="font-semibold text-slate-100">Hotel Gran Vía</div>
+                                <div class="text-xs text-slate-500">ID: 991122</div>
+                            </td>
+                            <td class="px-6 py-4 text-sm">Centro Histórico</td>
+                            <td class="px-6 py-4">
+                                <span class="px-2 py-1 rounded text-[10px] font-bold uppercase bg-indigo-500/10 text-indigo-500 border border-indigo-500/20">Abierto</span>
+                            </td>
+                            <td class="px-6 py-4">
+                                <span class="flex items-center gap-1.5 text-rose-500 font-medium text-sm">
+                                    <span class="w-2 h-2 rounded-full bg-rose-500"></span> Alta
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 text-sm text-slate-300">L. Torres</td>
+                            <td class="px-6 py-4 text-sm text-slate-500">Hace 3 h</td>
+                            <td class="px-6 py-4">
+                                <a href="./ticket_detail.html" class="text-indigo-400 hover:text-indigo-300 font-medium text-sm underline-offset-4 hover:underline">Ver detalle</a>
+                            </td>
+                        </tr>
+                        <!-- Row 7 -->
+                        <tr class="hover:bg-slate-800/30 transition-colors">
+                            <td class="px-6 py-4 font-mono text-sm text-indigo-400">#TK-4380</td>
+                            <td class="px-6 py-4">
+                                <div class="font-semibold text-slate-100">Sonia Méndez</div>
+                                <div class="text-xs text-slate-500">ID: 334511</div>
+                            </td>
+                            <td class="px-6 py-4 text-sm">Sector Sur</td>
+                            <td class="px-6 py-4">
+                                <span class="px-2 py-1 rounded text-[10px] font-bold uppercase bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">Resuelto</span>
+                            </td>
+                            <td class="px-6 py-4">
+                                <span class="flex items-center gap-1.5 text-slate-400 font-medium text-sm">
+                                    <span class="w-2 h-2 rounded-full bg-slate-400"></span> Baja
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 text-sm text-slate-300">R. Mendoza</td>
+                            <td class="px-6 py-4 text-sm text-slate-500">Hace 4 h</td>
+                            <td class="px-6 py-4">
+                                <a href="./ticket_detail.html" class="text-indigo-400 hover:text-indigo-300 font-medium text-sm underline-offset-4 hover:underline">Ver detalle</a>
+                            </td>
+                        </tr>
+                        <!-- Row 8 -->
+                        <tr class="hover:bg-slate-800/30 transition-colors">
+                            <td class="px-6 py-4 font-mono text-sm text-indigo-400">#TK-4375</td>
+                            <td class="px-6 py-4">
+                                <div class="font-semibold text-slate-100">Felipe Herrera</div>
+                                <div class="text-xs text-slate-500">ID: 129988</div>
+                            </td>
+                            <td class="px-6 py-4 text-sm">Sector Norte</td>
+                            <td class="px-6 py-4">
+                                <span class="px-2 py-1 rounded text-[10px] font-bold uppercase bg-slate-500/10 text-slate-400 border border-slate-700">Cerrado</span>
+                            </td>
+                            <td class="px-6 py-4">
+                                <span class="flex items-center gap-1.5 text-orange-400 font-medium text-sm">
+                                    <span class="w-2 h-2 rounded-full bg-orange-400"></span> Media
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 text-sm text-slate-300">A. Gómez</td>
+                            <td class="px-6 py-4 text-sm text-slate-500">Ayer</td>
+                            <td class="px-6 py-4">
+                                <a href="./ticket_detail.html" class="text-indigo-400 hover:text-indigo-300 font-medium text-sm underline-offset-4 hover:underline">Ver detalle</a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Table Pagination (Static UI) -->
+            <div class="bg-slate-900 border-t border-slate-800 px-6 py-4 flex items-center justify-between">
+                <span class="text-sm text-slate-500">Mostrando 8 de 124 tickets</span>
+                <div class="flex gap-2">
+                    <button class="px-3 py-1 bg-slate-800 border border-slate-700 rounded text-sm hover:bg-slate-700 disabled:opacity-50" disabled>Anterior</button>
+                    <button class="px-3 py-1 bg-slate-800 border border-slate-700 rounded text-sm hover:bg-slate-700">Siguiente</button>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- App Entry Point -->
+    <script type="module" src="../js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cerrados | Soporte Técnico ISP</title>
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Supabase JS (CDN) -->
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+  <style>
+    :root{ --bottomNavH: 72px; --brandBlue: #2563eb; }
+
+    /* --- Bottom tab bar (same as kanban) --- */
+    .bottom-nav{
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: var(--bottomNavH);
+      padding-top: 6px !important;
+      padding-bottom: 8px !important;
+      background: var(--brandBlue) !important;
+      border-top: 0 !important;
+      z-index: 50;
+    }
+
+    .bottom-nav .bottom-nav-inner{
+      height: 100%;
+      /* Lower the header text slightly without making the bar taller */
+      padding: 12px 24px 4px !important;
+      gap: 2px !important;
+      display: flex;
+      align-items: center;
+      width: 100%;
+      max-width: 760px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .bottom-nav svg{ width: 30px !important; height: 30px !important; }
+
+    .bottom-nav .tab-icon{
+      width: auto !important;
+      height: auto !important;
+      border-radius: 0 !important;
+      background: transparent !important;
+      border: 0 !important;
+      padding: 0 !important;
+    }
+
+    .bottom-nav .tab-label{ font-size: 9px !important; line-height: 1 !important; margin-top: 6px !important; }
+    .bottom-nav a{ gap: 2px !important; color: rgba(255,255,255,.75) !important; }
+    .bottom-nav a:hover{ color: #fff !important; }
+    .bottom-nav a svg{ stroke: currentColor !important; }
+    .bottom-nav .tab-label{ color: currentColor !important; }
+
+    /* Active tab */
+    .bottom-nav a.text-blue-600{ color: #fff !important; }
+
+    /* Ensure content doesn't get covered by the nav */
+    main.main-content{ padding-bottom: var(--bottomNavH) !important; }
+
+    /* --- TOP BAR (same as kanban) --- */
+    header.top-bar{
+      position: sticky;
+      top: 0;
+      z-index: 40;
+      background: var(--brandBlue) !important;
+      border-bottom: 0 !important;
+    }
+
+    header.top-bar .top-inner{
+      /* Lower the header text slightly without making the bar taller */
+      padding: 12px 22px 14px !important;
+      gap: 2px !important;
+    }
+
+    header.top-bar .top-actions{
+      margin-top: -2px !important;
+      margin-right: 22px !important;
+    }
+
+    header.top-bar .top-filters{ margin-top: -12px !important; margin-bottom: 6px !important; }
+    /* Push Volver + title/subtitle down a bit */
+    header.top-bar .top-left{ margin-top: 14px !important; }
+
+    /* Move only the "← Volver" a bit more to the left */
+    header.top-bar .top-left > a{ margin-left: -40px !important; }
+
+    /* Export button: white background + brand blue text */
+    header.top-bar #btnExport{
+      background: #ffffff !important;
+      color: var(--brandBlue) !important;
+      border-color: rgba(255,255,255,.55) !important;
+    }
+    header.top-bar #btnExport:hover{
+      background: rgba(255,255,255,.92) !important;
+    }
+
+    header.top-bar,
+    header.top-bar h1,
+    header.top-bar a,
+    header.top-bar button,
+    header.top-bar input,
+    header.top-bar select{
+      color: #ffffff !important;
+    }
+
+    header.top-bar svg{ stroke: currentColor !important; }
+
+    header.top-bar h1{ font-size: 1.25rem !important; }
+
+    header.top-bar .top-subtitle{ font-size: 0.90rem !important; }
+
+    header.top-bar .top-actions svg{ width: 24px !important; height: 24px !important; }
+    header.top-bar .top-filters button{
+      padding-top: 7px !important;
+      padding-bottom: 7px !important;
+      font-size: 12px !important;
+    }
+
+    header.top-bar .top-avatar{
+      width: 30px !important;
+      height: 30px !important;
+      font-size: 11px !important;
+      background: rgba(255,255,255,.12) !important;
+      border-color: rgba(255,255,255,.22) !important;
+      color: #ffffff !important;
+    }
+    header.top-bar .top-avatar:hover{ background: rgba(255,255,255,.18) !important; }
+
+    header.top-bar .top-actions button,
+    header.top-bar .top-actions a{
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Inputs contrast on blue */
+    header.top-bar input,
+    header.top-bar select{
+      padding-top: 6px !important;
+      padding-bottom: 6px !important;
+      font-size: 12px !important;
+      background: rgba(255,255,255,.14) !important;
+      border: 1px solid rgba(255,255,255,.22) !important;
+      border-radius: 9999px !important;
+    }
+    header.top-bar input::placeholder{ color: rgba(255,255,255,.75) !important; }
+    header.top-bar select option{ color: #0f172a; }
+  </style>
+</head>
+
+<body class="bg-slate-50 text-slate-900">
+  <!-- TOP BAR -->
+  <header class="top-bar">
+    <div class="top-inner max-w-6xl mx-auto flex flex-col gap-3">
+
+      <div class="flex items-center justify-between">
+        <div class="top-left flex items-center gap-3 min-w-0">
+          <a href="kanban.html" class="text-sm font-bold opacity-90 hover:opacity-100">← Volver</a>
+          <div class="min-w-0">
+            <h1 class="font-extrabold leading-tight truncate">Tickets Cerrados</h1>
+            <div class="top-subtitle opacity-90 truncate">Histórico + consumo de materiales + export</div>
+          </div>
+        </div>
+
+        <div class="top-actions flex items-center gap-3 shrink-0">
+          <!-- Notificaciones -->
+          <button class="relative" aria-label="Notificaciones">
+            <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
+            </svg>
+          </button>
+
+          <!-- Ajustes -->
+          <a href="Ajustes.html" aria-label="Ajustes">
+            <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+            </svg>
+          </a>
+
+          <!-- Perfil -->
+          <a href="./perfil.html" class="top-avatar rounded-full border flex items-center justify-center font-bold" aria-label="Perfil">
+            JD
+          </a>
+        </div>
+      </div>
+
+      <!-- ACTIONS ROW (Refresh / Export) -->
+      <div class="top-filters flex flex-wrap items-center justify-end gap-2">
+        <button id="btnRefresh" class="px-5 py-2 rounded-full bg-white/12 border border-white/20 font-extrabold text-xs hover:bg-white/15">
+          Refrescar
+        </button>
+        <button id="btnExport" class="px-5 py-2 rounded-full bg-white border border-white/30 font-extrabold text-xs">
+          Exportar CSV
+        </button>
+      </div>
+
+    </div>
+  </header>
+
+  <main class="main-content max-w-6xl mx-auto px-5 py-6">
+    <!-- Filtros -->
+    <section class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div>
+          <label class="text-xs font-bold text-slate-600">Buscar</label>
+          <input id="searchInput" type="text"
+            class="mt-2 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm"
+            placeholder="Cliente, título, zona, ID..." />
+        </div>
+
+        <div>
+          <label class="text-xs font-bold text-slate-600">Desde</label>
+          <input id="dateFrom" type="date"
+            class="mt-2 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm" />
+        </div>
+
+        <div>
+          <label class="text-xs font-bold text-slate-600">Hasta</label>
+          <input id="dateTo" type="date"
+            class="mt-2 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm" />
+        </div>
+
+        <div class="flex items-end gap-2">
+          <button id="btnApply"
+            class="w-full px-4 py-2 rounded-xl bg-slate-900 text-white font-bold text-sm hover:bg-slate-800">
+            Aplicar
+          </button>
+          <button id="btnClear"
+            class="px-4 py-2 rounded-xl bg-slate-100 text-slate-700 font-bold text-sm hover:bg-slate-200">
+            Limpiar
+          </button>
+        </div>
+      </div>
+
+      <div class="mt-4 flex items-center justify-between">
+        <div id="metaText" class="text-xs text-slate-500">—</div>
+        <div class="text-xs text-slate-400">
+          
+        </div>
+      </div>
+    </section>
+
+    <!-- Lista -->
+    <section class="mt-6">
+      <div id="closedList" class="space-y-4"></div>
+
+      <div id="emptyState" class="hidden mt-10 text-center text-slate-400">
+        No hay tickets cerrados con esos filtros.
+      </div>
+    </section>
+  </main>
+
+  <!-- BOTTOM TAB BAR (nuevo diseño) -->
+  <nav class="bottom-nav">
+    <div class="bottom-nav-inner w-full max-w-[860px] mx-auto px-5 py-0">
+      <div class="flex justify-between items-start w-full gap-8">
+
+        <!-- TICKETS (active) -->
+        <a href="./kanban.html" class="flex flex-col items-center gap-1 text-blue-600">
+          <div class="tab-icon flex items-center justify-center">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <rect x="5" y="6" width="14" height="12" rx="2" ry="2" stroke-width="2" />
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M5 9.5c1 0 1.8.8 1.8 1.8S6 13.1 5 13.1M19 9.5c-1 0-1.8.8-1.8 1.8S18 13.1 19 13.1" />
+              <path stroke-linecap="round" stroke-width="2" stroke-dasharray="2 2" d="M12 7.5v9" />
+            </svg>
+          </div>
+          <span class="tab-label font-bold uppercase tracking-tighter">Tickets</span>
+        </a>
+
+        <!-- UBICACIÓN -->
+        <a href="./map.html" class="flex flex-col items-center gap-1 text-slate-400 hover:text-blue-500 transition-colors">
+          <div class="tab-icon flex items-center justify-center">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M12 21s7-5.25 7-11a7 7 0 10-14 0c0 5.75 7 11 7 11z" />
+              <circle cx="12" cy="8.8" r="2.25" stroke-width="2" />
+            </svg>
+          </div>
+          <span class="tab-label font-bold uppercase tracking-tighter">Ubicación</span>
+        </a>
+
+        <!-- INVENTARIO -->
+        <a href="./inventario.html" class="flex flex-col items-center gap-1 text-slate-400 hover:text-blue-500 transition-colors">
+          <div class="tab-icon flex items-center justify-center">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M12 2l9 5-9 5-9-5 9-5z" />
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M3 7v10l9 5 9-5V7" />
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 12v10" />
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 7l-9 5-9-5" />
+            </svg>
+          </div>
+          <span class="tab-label font-bold uppercase tracking-tighter">Inventario</span>
+        </a>
+
+      </div>
+    </div>
+  </nav>
+
+  <!-- JS -->
+  <script type="module" src="../js/cerrados.js"></script>
+</body>
+</html>

@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mapa | Soporte Técnico ISP</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Local CSS -->
+    <link rel="stylesheet" href="../css/styles.css" />
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#3b82f6',
+                        secondary: '#64748b',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        #map {
+            height: 100%;
+            width: 100%;
+        }
+        /* Custom Marker Label Style */
+        .map-label {
+            background-color: white;
+            color: #1e293b;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 99px;
+            border: 1px solid #e2e8f0;
+            white-space: nowrap;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        /* Hide GM default infowindow pointer/close button */
+        .gm-style-iw-c { padding: 0 !important; }
+        .gm-style-iw-d { overflow: hidden !important; }
+        .gm-ui-hover-text, .gm-style-iw-tc, button.gm-style-iw-close-btn { display: none !important; }
+        
+        .card-highlight { transition: all 0.3s ease; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-900 flex flex-col min-h-screen h-screen overflow-hidden">
+
+    <!-- TOP BAR -->
+    <!-- TOP BAR (Updated with User Avatar) -->
+<header class="bg-white border-b border-slate-200 sticky top-0 z-40 px-4 py-3 shrink-0">
+    <div class="max-w-[1800px] mx-auto flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+        <div class="flex items-center gap-3">
+            <h1 class="text-xl font-bold text-slate-800">Mapa de Tickets con Bloques de Tiempo</h1>
+            <span class="hidden md:block text-slate-300">|</span>
+            <div class="flex items-center gap-2">
+                <select class="bg-slate-100 border-none rounded-lg px-3 py-1.5 text-xs font-medium text-slate-600 focus:ring-2 focus:ring-blue-500 cursor-pointer">
+                    <option value="">Por prioridad</option>
+                    <option value="alta">Alta</option>
+                    <option value="media">Media</option>
+                    <option value="baja">Baja</option>
+                </select>
+                <select class="bg-slate-100 border-none rounded-lg px-3 py-1.5 text-xs font-medium text-slate-600 focus:ring-2 focus:ring-blue-500 cursor-pointer">
+                    <option value="">Por zona</option>
+                    <option value="A">Zona A</option>
+                    <option value="B">Zona B</option>
+                    <option value="C">Zona C</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="flex items-center gap-3">
+            <!-- Search -->
+            <div class="relative hidden sm:block">
+                <input type="text" placeholder="Buscar cliente o ticket..." class="pl-9 pr-4 py-1.5 bg-slate-100 border-none rounded-full text-sm w-64 focus:ring-2 focus:ring-blue-500 transition-all">
+                <svg class="w-4 h-4 absolute left-3 top-2.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+            </div>
+            
+            <!-- Notification Bell -->
+            <button class="relative text-slate-500 hover:text-blue-600 transition-colors">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
+                <span class="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>
+            </button>
+
+            <!-- Settings Icon -->
+            <a href="Ajustes.html" class="text-slate-500 hover:text-blue-600 transition-colors">
+
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+            </a>
+
+            <!-- User Avatar Bubble (Matches Kanban) -->
+            <div class="flex items-center ml-2 pl-4 border-l border-slate-200">
+                <div class="w-8 h-8 bg-blue-100 rounded-full border border-blue-200 flex items-center justify-center text-blue-600 font-bold text-xs cursor-pointer hover:bg-blue-200 transition-colors">
+                    JD
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+    <!-- MAIN CONTENT -->
+    <main class="flex-1 flex flex-col lg:flex-row overflow-hidden relative">
+        
+        <!-- LEFT PANEL -->
+        <aside class="w-full lg:w-96 bg-white border-r border-slate-200 flex flex-col shadow-xl z-20 shrink-0 overflow-y-auto lg:overflow-visible">
+            <div class="p-5 flex-1">
+                <!-- DYNAMIC SELECTION CARD CONTAINER (Requirement 2) -->
+                <div id="dynamic-selection-card">
+                    <div class="bg-slate-50 border border-slate-200 rounded-2xl p-4 mb-6">
+                        <div class="flex justify-between items-start mb-3">
+                            <div>
+                                <h3 id="card-name" class="font-bold text-slate-900">Juan Pérez</h3>
+                                <p id="card-code" class="text-xs font-mono text-blue-600">#ISP-8821</p>
+                            </div>
+                            <span id="card-status" class="bg-amber-100 text-amber-700 text-[10px] font-bold px-2 py-1 rounded-full border border-amber-200 uppercase">En Espera</span>
+                        </div>
+                        
+                        <div class="flex gap-2 mb-4">
+                            <span id="card-zone" class="bg-slate-200 text-slate-700 text-[10px] font-bold px-2 py-0.5 rounded">Zona: Norte</span>
+                            <span id="card-priority" class="bg-rose-100 text-rose-700 text-[10px] font-bold px-2 py-0.5 rounded">Prioridad: Alta</span>
+                        </div>
+
+                        <div id="card-time-block-container" class="bg-blue-600 rounded-xl p-3 text-white shadow-md shadow-blue-200">
+                            <p class="text-[10px] uppercase font-bold opacity-80">Bloque de tiempo</p>
+                            <p id="card-time-block" class="text-sm font-bold flex items-center gap-2">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                Mismo día
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Address Section (Updates with dynamic card) -->
+                <div class="mb-6">
+                    <h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Ubicación / Detalles</h4>
+                    <div class="flex gap-3">
+                        <div class="mt-1">
+                            <svg id="marker-icon-svg" class="w-5 h-5 text-rose-500" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+                        </div>
+                        <p id="card-address" class="text-sm text-slate-600 leading-tight">
+                            Av. Paseo de los Leones #4402, C.P. 64000, Monterrey, N.L.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Technicians List (Static Layout, visual highlight logic) -->
+                <div class="mb-6">
+                    <h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Técnicos cercanos</h4>
+                    <div class="space-y-3">
+                        <div id="row-rm" class="flex items-center justify-between p-3 rounded-xl border border-slate-100 hover:bg-slate-50 transition-colors cursor-pointer">
+                            <div class="flex items-center gap-3">
+                                <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center text-green-600 font-bold text-xs">RM</div>
+                                <div>
+                                    <p class="text-xs font-bold text-slate-800">Roberto Mendoza</p>
+                                    <p class="text-[10px] text-slate-500">2.5 km de distancia</p>
+                                </div>
+                            </div>
+                            <span class="w-2 h-2 bg-emerald-500 rounded-full shadow-sm shadow-emerald-200"></span>
+                        </div>
+                        <div id="row-lt" class="flex items-center justify-between p-3 rounded-xl border border-slate-100 hover:bg-slate-50 transition-colors cursor-pointer">
+                            <div class="flex items-center gap-3">
+                                <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center text-green-600 font-bold text-xs">LT</div>
+                                <div>
+                                    <p class="text-xs font-bold text-slate-800">Lucía Torres</p>
+                                    <p class="text-[10px] text-slate-500">4.1 km de distancia</p>
+                                </div>
+                            </div>
+                            <span class="w-2 h-2 bg-emerald-500 rounded-full shadow-sm shadow-emerald-200"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bottom Button -->
+            <div class="p-5 border-t border-slate-100 bg-white">
+                <button id="btn-assign" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl shadow-lg shadow-blue-100 transition-all active:scale-95">
+                    Asignar Técnico
+                </button>
+            </div>
+        </aside>
+
+        <!-- MAP AREA -->
+        <section class="flex-1 relative bg-slate-100 overflow-hidden">
+            <div id="map"></div>
+        </section>
+    </main>
+
+    <!-- BOTTOM TAB BAR -->
+    <nav class="bg-white border-t border-slate-200 px-6 py-3 sticky bottom-0 z-50 shrink-0">
+        <div class="max-w-md mx-auto flex justify-between items-center">
+            <a href="./kanban.html" class="flex flex-col items-center gap-1 text-slate-400 hover:text-blue-500 transition-colors">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V5zm2 1v4h4V6H5zm6 0v4h4V6h-4zm6 0v4h4V6h-4zM5 12v4h4v-4H5zm6 0v4h4v-4h-4zm6 0v4h4v-4h-4z"></path></svg>
+                <span class="text-[10px] font-bold uppercase tracking-tighter">Kanban</span>
+            </a>
+            <a href="#" class="flex flex-col items-center gap-1 text-blue-600 group">
+                <div class="p-1 rounded-lg bg-blue-50">
+                    <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7l6-3 5.447 2.724a1 1 0 01.553.894v10.764a1 1 0 01-1.447.894L15 17l-6 3z"></path></svg>
+                </div>
+                <span class="text-[10px] font-bold uppercase tracking-tighter">Mapa</span>
+            </a>
+            <a href="./inventario.html" class="flex flex-col items-center gap-1 text-slate-400 hover:text-blue-500 transition-colors">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>
+                <span class="text-[10px] font-bold uppercase tracking-tighter">Inventario</span>
+            </a>
+        </div>
+    </nav>
+
+    <!-- Google Maps API -->
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAHZYQ-3TQIc9AtMXnlCUQntwyAgy4ouy0&callback=initMap" async defer></script>
+
+    <script>
+        // REFACTORED DATA (Requirement 2)
+        const markersData = [
+            { 
+                id: 'juan', 
+                type: 'ticket', 
+                name: "Juan Pérez", 
+                code: "#ISP-8821", 
+                zone: "Norte", 
+                priority: "Alta", 
+                status: "EN ESPERA", 
+                timeBlock: "Mismo día", 
+                address: "Av. Paseo de los Leones #4402, Monterrey, N.L.", 
+                pos: { lat: 19.4426, lng: -99.1432 }, 
+                color: '#f43f5e' 
+            },
+            { 
+                id: 'rm', 
+                type: 'technician', 
+                name: "Roberto Mendoza", 
+                code: "Téc. Disponibilidad", 
+                zone: "Norte", 
+                priority: "Media", 
+                status: "DISPONIBLE", 
+                timeBlock: "Turno Mañana", 
+                address: "Patrullando Sector A", 
+                pos: { lat: 19.4226, lng: -99.1232 }, 
+                color: '#10b981' // Green
+            },
+            { 
+                id: 'lt', 
+                type: 'technician', 
+                name: "Lucía Torres", 
+                code: "Téc. En Servicio", 
+                zone: "Sur", 
+                priority: "Baja", 
+                status: "OCUPADO", 
+                timeBlock: "N/A", 
+                address: "En sitio: Cliente #4492", 
+                pos: { lat: 19.4126, lng: -99.1532 }, 
+                color: '#10b981' // UPDATED to Green (Requirement 1)
+            },
+            { 
+                id: 'node1', 
+                type: 'node', 
+                name: "Nodo Norte A-12", 
+                code: "INFRA-001", 
+                zone: "Norte", 
+                priority: "Crítica", 
+                status: "ACTIVO", 
+                timeBlock: "Monitoreo 24/7", 
+                address: "Calle de la Montaña #12", 
+                pos: { lat: 19.4526, lng: -99.1132 }, 
+                color: '#fb923c' 
+            }
+        ];
+
+        let map;
+        let activeInfoWindow = null;
+        let markers = [];
+
+        window.initMap = function() {
+            const bounds = new google.maps.LatLngBounds();
+            map = new google.maps.Map(document.getElementById("map"), {
+                zoom: 12,
+                center: { lat: 19.4326, lng: -99.1332 },
+                disableDefaultUI: true,
+                styles: [{ "featureType": "poi", "stylers": [{ "visibility": "off" }] }]
+            });
+
+            markersData.forEach(data => {
+                // BIGGER CIRCLES (Requirement 1: scale ~11)
+                const marker = new google.maps.Marker({
+                    position: data.pos,
+                    map: map,
+                    icon: {
+                        path: google.maps.SymbolPath.CIRCLE,
+                        fillColor: data.color,
+                        fillOpacity: 1,
+                        strokeColor: "#ffffff", // Requirement 1: White stroke
+                        strokeWeight: 2,
+                        scale: 11
+                    }
+                });
+
+                const infoWindow = new google.maps.InfoWindow({
+                    content: `<div class="map-label">${data.name}</div>`,
+                    disableAutoPan: true
+                });
+
+                infoWindow.open(map, marker);
+                markers.push({ marker, infoWindow, id: data.id });
+                bounds.extend(data.pos);
+
+                // CLICK LOGIC (Requirement 2)
+                marker.addListener('click', () => {
+                    updateLeftPanel(data);
+                    // Requirement 4: Optional close others
+                    markers.forEach(m => m.infoWindow.close());
+                    infoWindow.open(map, marker);
+                });
+            });
+
+            map.fitBounds(bounds);
+        }
+
+        // RENDER FUNCTION (Requirement 2)
+        function updateLeftPanel(data) {
+            // Update Text Fields
+            document.getElementById('card-name').innerText = data.name;
+            document.getElementById('card-code').innerText = data.code;
+            document.getElementById('card-status').innerText = data.status;
+            document.getElementById('card-zone').innerText = `Zona: ${data.zone}`;
+            document.getElementById('card-priority').innerText = `Prioridad: ${data.priority}`;
+            document.getElementById('card-time-block').innerHTML = `
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                ${data.timeBlock}`;
+            document.getElementById('card-address').innerText = data.address;
+
+            // Simple simplified view logic for Nodes
+            const timeContainer = document.getElementById('card-time-block-container');
+            if (data.type === 'node') {
+                timeContainer.classList.replace('bg-blue-600', 'bg-slate-500');
+            } else {
+                timeContainer.classList.replace('bg-slate-500', 'bg-blue-600');
+            }
+
+            // Update icon color based on selection type
+            const iconSvg = document.getElementById('marker-icon-svg');
+            iconSvg.style.color = data.color;
+
+            // Highlight tech row if technician
+            document.getElementById('row-rm').classList.remove('bg-blue-50', 'border-blue-200');
+            document.getElementById('row-lt').classList.remove('bg-blue-50', 'border-blue-200');
+            if (data.id === 'rm') document.getElementById('row-rm').classList.add('bg-blue-50', 'border-blue-200');
+            if (data.id === 'lt') document.getElementById('row-lt').classList.add('bg-blue-50', 'border-blue-200');
+        }
+
+        // Keep existing assignment logic
+        document.getElementById('btn-assign').addEventListener('click', () => {
+            alert("Acción: Asignar técnico al ticket seleccionado.");
+        });
+    </script>
+
+    <!-- App Entry Point -->
+    <script type="module" src="../js/app.js"></script>
+</body>
+</html>

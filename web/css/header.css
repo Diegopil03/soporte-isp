@@ -1,0 +1,18 @@
+/* === TOP BAR === */
+.top-bar {
+  background: #ffffff;
+  border-bottom: 1px solid #e5e7eb;
+  z-index: 40;
+}
+
+/* Mobile compact */
+@media (max-width: 768px) {
+  .top-bar {
+    height: 56px;
+    padding: 0 12px;
+  }
+
+  .top-bar h1 {
+    font-size: 16px;
+  }
+}

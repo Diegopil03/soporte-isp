@@ -1,0 +1,16 @@
+/* === BOTTOM NAV (MOBILE FIRST) === */
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 64px;
+  background: #ffffff;
+  border-top: 1px solid #e5e7eb;
+  z-index: 50;
+
+  /* altura + safe area (iPhone notch) */
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+

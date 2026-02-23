@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ajustes | Soporte Técnico ISP</title>
+<!-- Tailwind CSS CDN -->
+<script src="https://cdn.tailwindcss.com"></script>
+<!-- Local CSS -->
+<link rel="stylesheet" href="../css/styles.css" />
+<style>
+  :root{ --bottomNavH: 72px; --brandBlue:#2563eb; }
+
+  /* Leave extra space for fixed bottom nav (so bottom CTA can breathe) */
+  main.main-content{ padding-bottom: calc(var(--bottomNavH) + 28px) !important; }
+
+  /* Extra safety on the very last section/button */
+  main.main-content > :last-child{ margin-bottom: 12px !important; }
+
+  /* --- Top bar (blue like kanban) --- */
+  header.top-bar{
+    background: var(--brandBlue) !important;
+    border-bottom: 0 !important;
+  }
+
+  header.top-bar .top-inner{
+    padding-top: 10px !important;
+    padding-bottom: 10px !important;
+    padding-left: 24px !important;
+    padding-right: 24px !important;
+    gap: 10px !important;
+  }
+
+  header.top-bar .top-actions{
+    margin-top: 18px !important;
+    margin-right: 28px !important;
+  }
+
+  /* All header text/icons white */
+  header.top-bar,
+  header.top-bar h1,
+  header.top-bar p,
+  header.top-bar span,
+  header.top-bar a,
+  header.top-bar button,
+  header.top-bar input,
+  header.top-bar select,
+  header.top-bar label{ color:#fff !important; }
+
+  header.top-bar svg{ stroke: currentColor !important; }
+
+  /* Inputs on blue */
+  header.top-bar input,
+  header.top-bar select{
+    background: rgba(255,255,255,.14) !important;
+    border: 1px solid rgba(255,255,255,.22) !important;
+  }
+  header.top-bar input::placeholder{ color: rgba(255,255,255,.78) !important; }
+  header.top-bar select option{ color:#0f172a; }
+
+  /* Left divider and subtle borders on blue */
+  header.top-bar .top-actions-wrap{ border-left-color: rgba(255,255,255,.22) !important; }
+
+  /* Avatar should be translucent */
+  header.top-bar .top-avatar{
+    background: rgba(255,255,255,.12) !important;
+    border-color: rgba(255,255,255,.22) !important;
+    color: #fff !important;
+  }
+
+  /* --- Bottom tab bar (blue like kanban) --- */
+  .bottom-nav{
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: var(--bottomNavH);
+    padding-top: 6px !important;
+    padding-bottom: 8px !important;
+    background: var(--brandBlue) !important;
+    border-top: 0 !important;
+    z-index: 50;
+  }
+
+  /* iOS safe-area / small screens: add a bit more breathing room */
+  @supports (padding: max(0px)) {
+    .bottom-nav{ padding-bottom: max(8px, env(safe-area-inset-bottom)) !important; }
+    main.main-content{ padding-bottom: calc(var(--bottomNavH) + 28px + env(safe-area-inset-bottom)) !important; }
+  }
+
+  .bottom-nav .bottom-nav-inner{
+    height: 100%;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+    display: flex;
+    align-items: center;
+    width: 100%;
+    max-width: 760px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .bottom-nav svg{ width: 30px !important; height: 30px !important; }
+
+  .bottom-nav .tab-icon{
+    width: auto !important;
+    height: auto !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    border: 0 !important;
+    padding: 0 !important;
+  }
+
+  .bottom-nav .tab-label{ font-size: 9px !important; line-height: 1 !important; margin-top: 6px !important; }
+
+  .bottom-nav a{ gap: 2px !important; color: rgba(255,255,255,.85) !important; }
+  .bottom-nav a:hover{ color: #fff !important; }
+  .bottom-nav a svg{ stroke: currentColor !important; }
+  .bottom-nav .tab-label{ color: currentColor !important; }
+
+  /* Active tab (if any) */
+  .bottom-nav a.text-blue-600{ color:#fff !important; }
+</style>
+<script>
+tailwind.config = {
+theme: {
+extend: {
+colors: {
+primary: '#3b82f6',
+secondary: '#64748b',
+}
+}
+}
+}
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <!-- Auth Gate: protect page -->
+  <script>
+    const SUPABASE_URL = "https://itkxgkxjwulfzklxyxke.supabase.co";
+    const SUPABASE_ANON_KEY = "sb_publishable_P2SJ7etHApOmvH2zXCeMng_hthMCXhA";
+
+    const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    sb.auth.getSession().then(({ data, error }) => {
+      if (error || !data.session) {
+        window.location.replace("login.html");
+      }
+    });
+  </script>
+</head>
+<body class="bg-slate-50 text-slate-900 flex flex-col min-h-screen">
+
+<!-- TOP BAR (REUSED FROM KANBAN/MAP/INVENTARIO) -->
+<header class="top-bar">
+    <div class="top-inner max-w-[1800px] mx-auto flex flex-col lg:flex-row lg:items-center justify-between">
+        <div class="flex items-center gap-3">
+            <h1 class="text-xl font-bold text-slate-800">Soporte Técnico – Operaciones</h1>
+            <span class="hidden md:block text-slate-300">|</span>
+            <p class="text-sm font-medium text-slate-500 hidden sm:block">Configuración</p>
+        </div>
+
+        <div class="top-actions top-actions-wrap flex items-center gap-3 border-l pl-4">
+            <div class="relative hidden sm:block">
+                <input type="text" placeholder="Buscar..." class="pl-9 pr-4 py-1.5 bg-slate-100 border-none rounded-full text-sm w-64 focus:ring-2 focus:ring-blue-500 transition-all">
+                <svg class="w-4 h-4 absolute left-3 top-2.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+            </div>
+            
+            <div class="flex items-center gap-3 border-l border-slate-200 pl-4">
+                <button class="relative text-slate-500 hover:text-blue-600 transition-colors">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
+                    <span class="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>
+                </button>
+                <!-- Settings Icon (Active) -->
+                <a href="ajustes.html" class="text-blue-600">
+                    <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58a.49.49 0 00.12-.61l-1.92-3.32a.488.488 0 00-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.484.484 0 00-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87a.49.49 0 00.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58a.49.49 0 00-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32a.49.49 0 00-.12-.61l-2.03-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"></path></svg>
+                </a>
+                <!-- User Avatar -->
+                <div class="top-avatar w-8 h-8 rounded-full border flex items-center justify-center font-bold text-xs cursor-pointer">
+                    JP
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+<!-- MAIN CONTENT -->
+<main class="main-content max-w-3xl mx-auto w-full p-6 lg:p-10 space-y-8">
+
+    
+    <header>
+        <h2 class="text-3xl font-bold text-slate-800 tracking-tight">Ajustes del Sistema</h2>
+        <p class="text-slate-500 mt-1">Configura las preferencias de tu panel operativo.</p>
+    </header>
+
+    <!-- SECTION 1: APARIENCIA -->
+    <section class="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
+        <div class="px-6 py-4 border-b border-slate-100 bg-slate-50/50">
+            <h3 class="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Apariencia</h3>
+        </div>
+        <div class="divide-y divide-slate-100">
+            <div class="p-6 flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-bold text-slate-800">Modo Oscuro</p>
+                    <p class="text-xs text-slate-500">Cambiar a una interfaz de alto contraste</p>
+                </div>
+                <label class="relative inline-flex items-center cursor-pointer">
+                    <input id="toggleDarkMode" type="checkbox" class="sr-only peer">
+                    <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                </label>
+            </div>
+            <div class="p-6 flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-bold text-slate-800">Diseño Compacto</p>
+                    <p class="text-xs text-slate-500">Reducir el espaciado en tablas y tarjetas</p>
+                </div>
+                <label class="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" class="sr-only peer">
+                    <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                </label>
+            </div>
+        </div>
+    </section>
+
+    <!-- SECTION 2: NOTIFICACIONES -->
+    <section class="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
+        <div class="px-6 py-4 border-b border-slate-100 bg-slate-50/50">
+            <h3 class="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Notificaciones</h3>
+        </div>
+        <div class="divide-y divide-slate-100">
+            <div class="p-6 flex items-center justify-between">
+                <p class="text-sm font-bold text-slate-800">Nuevos tickets</p>
+                <label class="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" class="sr-only peer" checked>
+                    <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                </label>
+            </div>
+            <div class="p-6 flex items-center justify-between">
+                <p class="text-sm font-bold text-slate-800">Cambios de estado</p>
+                <label class="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" class="sr-only peer" checked>
+                    <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                </label>
+            </div>
+            <div class="p-6 flex items-center justify-between">
+                <p class="text-sm font-bold text-slate-800">Asignación de técnicos</p>
+                <label class="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" class="sr-only peer">
+                    <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                </label>
+            </div>
+        </div>
+    </section>
+
+    <!-- SECTION 3: COMPORTAMIENTO -->
+    <section class="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
+        <div class="px-6 py-4 border-b border-slate-100 bg-slate-50/50">
+            <h3 class="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Comportamiento Predeterminado</h3>
+        </div>
+        <div class="p-6 space-y-6">
+            <div>
+                <label class="block text-xs font-bold text-slate-400 uppercase mb-2">Vista inicial al ingresar</label>
+                <select class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all">
+                    <option value="kanban">Tablero Kanban</option>
+                    <option value="mapa">Mapa de Operaciones</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-slate-400 uppercase mb-2">Ordenamiento de tickets</label>
+                <select class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all">
+                    <option value="prioridad">Por Prioridad</option>
+                    <option value="zona">Por Zona</option>
+                </select>
+            </div>
+        </div>
+    </section>
+
+    <!-- SECTION 4: SESIÓN -->
+    <section class="space-y-3">
+        <button class="w-full bg-white border border-slate-200 py-4 rounded-2xl text-slate-300 font-bold text-sm cursor-not-allowed flex items-center justify-center gap-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+            Cambiar Contraseña
+        </button>
+        <button class="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-2xl font-bold text-sm transition-all shadow-lg shadow-blue-200 active:scale-[0.98]">
+            Cerrar Sesión
+        </button>
+    </section>
+
+</main>
+
+<!-- BOTTOM TAB BAR (same as kanban) -->
+<nav class="bottom-nav">
+  <div class="bottom-nav-inner w-full max-w-[860px] mx-auto px-5 py-0">
+    <div class="flex justify-between items-start w-full gap-8">
+
+      <!-- TICKETS -->
+      <a href="kanban.html" class="flex flex-col items-center gap-1 text-slate-400 hover:text-blue-500 transition-colors">
+        <div class="tab-icon flex items-center justify-center">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <rect x="5" y="6" width="14" height="12" rx="2" ry="2" stroke-width="2" />
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M5 9.5c1 0 1.8.8 1.8 1.8S6 13.1 5 13.1M19 9.5c-1 0-1.8.8-1.8 1.8S18 13.1 19 13.1" />
+            <path stroke-linecap="round" stroke-width="2" stroke-dasharray="2 2" d="M12 7.5v9" />
+          </svg>
+        </div>
+        <span class="tab-label font-bold uppercase tracking-tighter">Tickets</span>
+      </a>
+
+      <!-- UBICACIÓN -->
+      <a href="map.html" class="flex flex-col items-center gap-1 text-slate-400 hover:text-blue-500 transition-colors">
+        <div class="tab-icon flex items-center justify-center">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M12 21s7-5.25 7-11a7 7 0 10-14 0c0 5.75 7 11 7 11z" />
+            <circle cx="12" cy="8.8" r="2.25" stroke-width="2" />
+          </svg>
+        </div>
+        <span class="tab-label font-bold uppercase tracking-tighter">Ubicación</span>
+      </a>
+
+      <!-- INVENTARIO -->
+      <a href="inventario.html" class="flex flex-col items-center gap-1 text-slate-400 hover:text-blue-500 transition-colors">
+        <div class="tab-icon flex items-center justify-center">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 2l9 5-9 5-9-5 9-5z" />
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10l9 5 9-5V7" />
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 12v10" />
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 7l-9 5-9-5" />
+          </svg>
+        </div>
+        <span class="tab-label font-bold uppercase tracking-tighter">Inventario</span>
+      </a>
+
+    </div>
+  </div>
+</nav>
+
+<!-- App Entry Point -->
+<script type="module" src="../js/app.js"></script>
+<script type="module">
+  import { setTheme, isDark } from "../js/theme.js";
+
+  const el = document.getElementById("toggleDarkMode");
+  if (el) {
+    el.checked = isDark();
+    el.addEventListener("change", () => setTheme(el.checked));
+  }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Iniciar Sesión | Soporte Técnico</title>
+    
+    <!-- Supabase JS -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <!-- Tailwind CSS (using CDN to match existing utility class style) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Inter for Enterprise feel -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        /* Smooth transitions for inputs */
+        .input-transition { transition: all 0.2s ease-in-out; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 h-screen flex flex-col overflow-hidden">
+
+    <!-- Header (Matching Kanban Style) -->
+    <header class="bg-white border-b border-slate-200 h-16 flex-none flex items-center justify-between px-4 sm:px-6">
+        <div class="flex items-center gap-3">
+            <span class="font-semibold text-slate-800 text-lg tracking-tight">Soporte Técnico</span>
+        </div>
+        <!-- Optional placeholder badge, visually disabled/empty for login context -->
+        <div class="hidden sm:flex h-8 w-8 rounded-full bg-slate-100 border border-slate-200 items-center justify-center text-xs font-medium text-slate-400">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-1 flex flex-col items-center justify-center p-4 sm:p-6">
+        
+        <!-- Login Card -->
+        <div class="w-full max-w-[400px] bg-white rounded-2xl shadow-sm border border-slate-200 p-8 sm:p-10">
+            
+            <!-- Card Header -->
+            <div class="text-center mb-8">
+                <h1 class="text-2xl font-bold text-slate-900 mb-2">Iniciar sesión</h1>
+                <p class="text-sm text-slate-500">Accede al panel de operaciones</p>
+            </div>
+
+            <!-- Form -->
+            <form id="login-form" class="space-y-5">
+                
+                <!-- Email Field -->
+                <div class="space-y-1.5">
+                    <label for="email" class="block text-sm font-medium text-slate-700">Correo electrónico</label>
+                    <input 
+                        type="email" 
+                        id="email" 
+                        name="email"
+                        placeholder="usuario@landernetworks.com" 
+                        class="input-transition w-full px-4 py-2.5 rounded-lg border border-slate-300 bg-white text-slate-900 placeholder-slate-400 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 sm:text-sm"
+                    >
+                </div>
+
+                <!-- Password Field -->
+                <div class="space-y-1.5">
+                    <div class="flex items-center justify-between">
+                        <label for="password" class="block text-sm font-medium text-slate-700">Contraseña</label>
+                    </div>
+                    <input 
+                        type="password" 
+                        id="password" 
+                        name="password"
+                        placeholder="••••••••" 
+                        class="input-transition w-full px-4 py-2.5 rounded-lg border border-slate-300 bg-white text-slate-900 placeholder-slate-400 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 sm:text-sm"
+                    >
+                </div>
+
+                <!-- Error Message Area -->
+                <div id="error-container" class="hidden rounded-lg bg-red-50 p-3 border border-red-100">
+                    <div class="flex items-start gap-2">
+                        <svg class="h-5 w-5 text-red-500 mt-0.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                        </svg>
+                        <p id="error-text" class="text-sm text-red-600 font-medium">Error al iniciar sesión.</p>
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                <div class="pt-2">
+                    <button 
+  type="button"   
+  id="submit-btn"
+  class="w-full flex justify-center py-2.5 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-600 transition-colors"
+>
+  Entrar
+</button>
+
+                </div>
+
+                <!-- Forgot Password Link (Visual only) -->
+                <div class="text-center mt-4">
+                    <a href="#" class="text-sm font-medium text-blue-600 hover:text-blue-500 transition-colors">
+                        ¿Olvidaste tu contraseña?
+                    </a>
+                </div>
+
+            </form>
+        </div>
+
+        <!-- Footer Text -->
+        <div class="mt-8 text-center">
+            <p class="text-xs text-slate-400 font-medium">Lander Networks • ISP Support</p>
+        </div>
+
+    </main>
+
+    
+
+    <script>
+  const SUPABASE_URL = "https://itkxgkxjwulfzklxyxke.supabase.co";
+  const SUPABASE_ANON_KEY = "sb_publishable_P2SJ7etHApOmvH2zXCeMng_hthMCXhA";
+
+  const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  const emailInput = document.getElementById("email");
+  const passwordInput = document.getElementById("password");
+  const errorContainer = document.getElementById("error-container");
+  const errorText = document.getElementById("error-text");
+  const submitBtn = document.getElementById("submit-btn");
+
+  submitBtn.addEventListener("click", async () => {
+    errorContainer.classList.add("hidden");
+
+    const email = emailInput.value.trim();
+    const password = passwordInput.value.trim();
+
+    if (!email || !password) {
+      showError("Por favor completa todos los campos.");
+      return;
+    }
+
+    submitBtn.innerText = "Verificando...";
+    submitBtn.disabled = true;
+
+    try {
+      const { data, error } = await sb.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (error) throw error;
+
+      console.log("LOGIN OK", data);
+
+      // ✅ REDIRECCIÓN REAL
+      window.location.href = "kanban.html";
+
+    } catch (err) {
+      showError(err.message || "Credenciales incorrectas");
+      submitBtn.innerText = "Entrar";
+      submitBtn.disabled = false;
+    }
+  });
+
+  function showError(message) {
+    errorText.textContent = message;
+    errorContainer.classList.remove("hidden");
+  }
+</script>
+
+
+
+</body>
+</html>
