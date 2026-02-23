@@ -234,13 +234,14 @@
         -webkit-overflow-scrolling: touch; /* iOS momentum scroll */
         touch-action: pan-y;               /* allow vertical scroll */
         overscroll-behavior: contain;      /* prevent background scroll chaining */
+        pointer-events: auto;
+        background-clip: padding-box;
       }
       #ticketsPanel.is-open{ transform: translateY(0); }
 
       /* Only lock the page scroll when the drawer is open */
       body.drawer-open{
         overflow: hidden;
-        touch-action: none;
       }
 
       /* Make map fill remaining space */
