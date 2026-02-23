@@ -115,11 +115,8 @@
 
     
 
-    <script>
-  const SUPABASE_URL = "https://itkxgkxjwulfzklxyxke.supabase.co";
-  const SUPABASE_ANON_KEY = "sb_publishable_P2SJ7etHApOmvH2zXCeMng_hthMCXhA";
-
-  const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    <script type="module">
+  import { signIn } from "../js/auth.js";
 
   const emailInput = document.getElementById("email");
   const passwordInput = document.getElementById("password");
@@ -127,44 +124,38 @@
   const errorText = document.getElementById("error-text");
   const submitBtn = document.getElementById("submit-btn");
 
+  function showError(message) {
+    errorText.textContent = message;
+    errorContainer.classList.remove("hidden");
+  }
+
   submitBtn.addEventListener("click", async () => {
     errorContainer.classList.add("hidden");
 
     const email = emailInput.value.trim();
-    const password = passwordInput.value.trim();
+    const password = passwordInput.value; // ⚠️ NO hagas trim al password
 
     if (!email || !password) {
       showError("Por favor completa todos los campos.");
       return;
     }
 
+    const prev = submitBtn.innerText;
     submitBtn.innerText = "Verificando...";
     submitBtn.disabled = true;
 
     try {
-      const { data, error } = await sb.auth.signInWithPassword({
-        email,
-        password,
-      });
+      await signIn(email, password);
 
-      if (error) throw error;
-
-      console.log("LOGIN OK", data);
-
-      // ✅ REDIRECCIÓN REAL
-      window.location.href = "kanban.html";
-
+      // ✅ como login.html está en /pages, kanban.html también
+      window.location.href = "./kanban.html";
     } catch (err) {
-      showError(err.message || "Credenciales incorrectas");
-      submitBtn.innerText = "Entrar";
+      console.error("[login] signIn error:", err);
+      showError(err?.message || "No se pudo iniciar sesión.");
+      submitBtn.innerText = prev;
       submitBtn.disabled = false;
     }
   });
-
-  function showError(message) {
-    errorText.textContent = message;
-    errorContainer.classList.remove("hidden");
-  }
 </script>
 
 
