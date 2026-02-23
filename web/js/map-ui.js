@@ -30,35 +30,44 @@ function isMobileViewport() {
 
 function openTicketsDrawer() {
   const panel = byId("ticketsPanel");
-  const backdrop = byId("ticketsBackdrop");
-  if (!panel || !backdrop) return;
+  if (!panel) return;
 
-  // Open
   panel.classList.add("is-open");
-  backdrop.classList.add("is-open");
-
-  // Lock background scroll (mobile)
   document.body.classList.add("drawer-open");
 
-   // Leaflet/iOS: evita que el mapa “robe” scroll/touch cuando usas el drawer
+  // 🔥 iPhone FIX: desactivar interacción del mapa mientras el drawer está abierto
   try {
-    if (window.L && panel) {
-      L.DomEvent.disableClickPropagation(panel);
-      L.DomEvent.disableScrollPropagation(panel);
+    if (map) {
+      map.dragging?.disable();
+      map.touchZoom?.disable();
+      map.doubleClickZoom?.disable();
+      map.scrollWheelZoom?.disable();
+      map.boxZoom?.disable();
+      map.keyboard?.disable();
+      if (map.tap) map.tap.disable();
     }
   } catch {}
 }
 
 function closeTicketsDrawer() {
   const panel = byId("ticketsPanel");
-  const backdrop = byId("ticketsBackdrop");
-  if (!panel || !backdrop) return;
+  if (!panel) return;
 
   panel.classList.remove("is-open");
-  backdrop.classList.remove("is-open");
-
-  // Restore background scroll
   document.body.classList.remove("drawer-open");
+
+  // 🔥 reactivar interacción del mapa
+  try {
+    if (map) {
+      map.dragging?.enable();
+      map.touchZoom?.enable();
+      map.doubleClickZoom?.enable();
+      map.scrollWheelZoom?.enable();
+      map.boxZoom?.enable();
+      map.keyboard?.enable();
+      if (map.tap) map.tap.enable();
+    }
+  } catch {}
 }
 
 function toggleTicketsDrawer() {
@@ -70,46 +79,21 @@ function toggleTicketsDrawer() {
 
 function wireTicketsDrawer() {
   const btn = byId("ticketsToggleBtn");
-  const backdrop = byId("ticketsBackdrop");
+  if (!btn) return;
 
-  // Only wire when the elements exist (map.html only)
-  if (!btn || !backdrop) return;
-
-  btn.addEventListener("click", () => toggleTicketsDrawer());
-  backdrop.addEventListener("click", () => closeTicketsDrawer());
-
-    // Asegura que nunca carguemos con overlay/drawer “pegado”
+  // Estado limpio al cargar (evita drawer “pegado”)
   closeTicketsDrawer();
 
-  const panel = byId("ticketsPanel");
-  if (panel) {
-    // Permite scroll del drawer, pero evita que el gesto llegue al mapa
-    panel.addEventListener(
-      "touchmove",
-      (e) => {
-        e.stopPropagation();
-      },
-      { passive: true }
-    );
-  }
+  // Toggle por botón
+  btn.addEventListener("click", () => toggleTicketsDrawer());
 
-  // Prevent iOS from scrolling the page when the backdrop is active
-  backdrop.addEventListener(
-    "touchmove",
-    (e) => {
-      if (backdrop.classList.contains("is-open")) e.preventDefault();
-    },
-    { passive: false }
-  );
-
-  // Close with ESC on desktop
+  // Cerrar con ESC (desktop)
   window.addEventListener("keydown", (e) => {
     if (e.key === "Escape") closeTicketsDrawer();
   });
 
-  // If we leave mobile viewport, ensure drawer is closed and body scroll restored
+  // Si salimos de mobile, cerramos
   window.addEventListener("resize", () => {
-    // If we leave mobile viewport, ensure drawer is closed and body scroll restored
     if (!isMobileViewport()) closeTicketsDrawer();
   });
 }
