@@ -216,11 +216,15 @@
         z-index: 2005;
         background: #ffffff;
         overflow-y: auto;
+        -webkit-overflow-scrolling: touch; /* iOS momentum scroll */
+        touch-action: pan-y;               /* allow vertical scroll */
+        overscroll-behavior: contain;      /* prevent background scroll chaining */
+        pointer-events: auto;
       }
       #ticketsPanel.is-open{ transform: translateY(0); }
 
       /* Backdrop */
-      #ticketsBackdrop{ z-index: 2000; }
+      #ticketsBackdrop{ z-index: 2000; pointer-events: auto; }
 
       /* Make map fill remaining space */
       #map{
@@ -232,6 +236,9 @@
       .leaflet-control{
         z-index: 400;
       }
+
+      /* When drawer is open, ensure it stays on top and captures touches */
+      #ticketsPanel.is-open{ pointer-events: auto; }
     }
   </style>
 </head>
@@ -399,6 +406,7 @@
 </nav>
 
 <!-- MAP UI -->
+ <script type="module" src="../js/auth-gate.js"></script>
 <script type="module" src="../js/map-ui.js"></script>
 
 </body>
