@@ -1,11 +1,11 @@
 name: wisphub-sync
 
-on:
-  schedule:
-    - cron: "*/2 * * * *"
-  workflow_dispatch:
+#on:
+#  schedule:
+#    - cron: "*/2 * * * *"
+ # workflow_dispatch:
 
-jobs:
+#jobs:
   run:
     runs-on: ubuntu-latest
     steps:
